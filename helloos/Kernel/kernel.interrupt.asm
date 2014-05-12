@@ -41,20 +41,19 @@ _kernel_init_idt_table:
 
 	; IDT 정보가 올라갈 시작 메모리 주소 설정
 	; 기본적으로 GDT 정보 바로 다음에 올라간다.
-	;mov ebx, dword [gdtr]
 
-	;xor eax, eax
-	;mov ax, word [ebx]
-	;mov esi, dword [ebx+2]
-	;add esi, eax
-	; GDT 마지막 부분 위치 구하기
-
-	mov esi, 0x00400000
+	mov esi, 0x00401000
 	; 이부분의 값은 kernel.memory_map.txt 파일의 메모리 맵 참조
 	mov dword [idtr], esi
 	mov word [esi], 256*8-1
-	; IDT 전체 크기 셋팅
-	mov dword [esi+2], 0
+	; IDT 전체 크기 초기화
+	mov eax, esi
+	add eax, 6
+	mov dword [esi+2], eax
+	;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	; IDT 시작 위치값 셋팅											   !
+	; 이부분이 잘못 지정되어 그동안 인터럽트만 걸리면 튕기는 것이였다. !
+	;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	;---------------------------------------------------------------
 	; 예외 핸들러 등록
@@ -309,6 +308,7 @@ _kernel_init_idt_table:
 	dec ecx
 	jne .ETC_INTERRUPT_LOOP
 	; 256개의 인터럽트들을 초기화 처리 한다.
+
 	ret
 
 ; 특정 인터럽트를 등록하는 함수
@@ -330,7 +330,6 @@ _kernel_set_idt:
 	;add ax, 8
 	;mov word [esi], ax
 	; IDT 전체 크기값 갱신
-	;mov dword [esi+2], 0
 
 	mov edi, dword [ebp+20]
 	shl edi, 3
@@ -353,13 +352,6 @@ _kernel_set_idt:
 	mov word [edi+6], 0
 	; 64bit모드용 확장 주소
 
-	add ebp, 8
-	push 16
-	push ebp
-	call _print_byte_dump32
-	; 옵션 확인, 세그먼트 확인, 함수 확인, IDT 번호 확인
-	; 이젠 명령어가 실행은 된다.. 하지만 튕긴다...
-
 	popa
 	mov esp, ebp
 	pop ebp
@@ -367,7 +359,6 @@ _kernel_set_idt:
 
 ; IDT 로드 함수
 _kernel_load_idt:
-	mov esi, dword [idtr]
 	lidt [esi]
 	ret
 
@@ -394,9 +385,6 @@ _kernel_exception_handler:
 	push 0x04
 	push er_msg
 	call _print32
-.L1:
-	jmp .L1
-	; 일단은 무한루프
 
 	ret
 

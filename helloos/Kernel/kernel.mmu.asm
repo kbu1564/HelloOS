@@ -69,6 +69,8 @@ _kernel_init_paging:
 	;-----------------------------------------------------------
 
 	mov eax, dword [PageDirectory]
+	and eax, 0xFFFFF000
+	add eax, 0x1000
 	mov cr3, eax
 	; 페이지 디렉토리 시작 주소를 등록
 
@@ -83,11 +85,53 @@ _kernel_init_paging:
 	; 페이징을 시작하기 위해 컨트롤 레지스터에서
 	; 최상위 비트를 1로 셋팅
 
-	push 3
+	push 4
 	push 0x0A
 	push Paging32SuccessMessage
 	call _print32
 
+	ret
+
+; 운영체제가 실행되는데 필요한 최소 64MB의 메모리가 여유공간으로
+; 존재하는지를 함께 검사한다.
+; 작동이 불가능 한 경우 ax 값에 0 값을 반환 시키고
+; 작동이 가능한 경우 ax 값에 1 값을 반환 시킨다.
+_kernel_is_enough_memory:
+	; 0 ~ 64MB
+	; 0 ~ 0x04000000 까지
+	mov ax, DataDescriptor
+	mov ds, ax
+
+	; 모든 범위의 주소공간에 접근을 가능하도록 하기 위한
+	; 데이터 디스크립트 설정
+
+	; 만약 1MB 이상의 메모리에 접근이 불가능 한 상황이라면
+	; 1MB 이상의 주소에 값을 대입후 다시 읽어 비교하게 되면
+	; 다른 값이 나오게 된다.
+	;
+	; 이는 1MB 이상의 영역 접근 실패시 0x00000000 주소를 참조하기 때문이다.
+	mov ecx, 63
+	; 1 ~ 64MB 영역에 접근이 가능한지 체크한다.
+	mov edi, 0x00100000
+	; 시작 부분을 1MB 영역으로 잡는다
+	mov ax, 1
+	; 일단 리턴값을 성공값으로 셋팅
+.mem_check_while:
+	mov dword [ds:edi], 0x12345678
+	cmp dword [ds:edi], 0x12345678
+	jne .error
+	; 오류 발생
+
+	add edi, 0x00100000
+	; 오류 발생하지 않은 경우 다음 1MB 영역을 검사
+	loop .mem_check_while
+	jmp .end
+	; 오류 발생 안함
+.error:
+	mov ax, 0
+	; 이 부분이 실행된 경우 최소 64MiB의 물리 메모리가 존재하지 않는 것 이므로
+	; 0값을 리턴한다.
+.end:
 	ret
 
 PageDirectory:			dd 0x00000000
