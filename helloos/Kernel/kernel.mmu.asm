@@ -47,7 +47,7 @@ _kernel_init_paging:
 	mov dword [edi], edx
 
 	add edi, 4
-	add eax, 0x1000
+	add eax, 4096
 	; 다음 페이지 영역의 주소를 가리키도록 한다.
 	loop .page_table_init
 
@@ -69,8 +69,6 @@ _kernel_init_paging:
 	;-----------------------------------------------------------
 
 	mov eax, dword [PageDirectory]
-	and eax, 0xFFFFF000
-	add eax, 0x1000
 	mov cr3, eax
 	; 페이지 디렉토리 시작 주소를 등록
 

@@ -89,8 +89,8 @@ _kernel_set_gdt:
 	mov byte [esi+5], al
 	mov al, byte [esi+6]
 	; P DPL S TYPE : al
-	and ah, 0xF0
-	; 하위 4비트 제거
+	shl ah, 4
+	; 하위 4비트 -> 상위 4비트로 이동
 	or ah, al
 	mov byte [esi+6], ah
 	; G D/B L AVL : ah
