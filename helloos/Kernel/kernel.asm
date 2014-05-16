@@ -45,9 +45,9 @@ _start:
 	; PG, CD, NW, AM, WP, NE, ET, TS, EM, MP, PE
 	;  0   1   0   0   0   1   1   1   0   1   1
 	;-------------------------------------------
-	;mov eax, cr0
-	;or eax, 0x00000001
-	mov eax, 0x4000003B
+	mov eax, cr0
+	or eax, 0x00000001
+	;mov eax, 0x4000003B
 	mov cr0, eax
 	; 보호모드로 전환
 
@@ -168,10 +168,6 @@ _protect_entry:
 	call _kernel_load_gdt
 	; GDT 로드
 
-	mov di, TSSDescriptor
-	call _kernel_load_tss
-	; TSS 설정
-
 	;-------------------------------------------------------------
 	; 페이징 및 인터럽트 초기화
 	;-------------------------------------------------------------
@@ -182,7 +178,7 @@ _protect_entry:
 	call _kernel_load_idt
 	; 인터럽트 디스크립터 테이블 등록
 
-	;call _kernel_init_paging
+	call _kernel_init_paging
 	; 페이징 초기화, 활성화
 	; 이놈이 실행된 순간 모든 주소는 논리주소로 해석됨...
 
@@ -193,18 +189,22 @@ _protect_entry:
 	sti
 	; 인터럽트 활성화
 
+	mov di, TSSDescriptor
+	call _kernel_load_tss
+	; TSS 설정
+
 	;-------------------------------------------------------------
 	; 인터럽트 발생 테스트
 	; 여러가지 인터럽트 예외를 강제적으로 발생시킨다.
 	;-------------------------------------------------------------
 	; devide error!!
-	;mov eax, 10
-	;mov ecx, 0
-	;div ecx
+	mov eax, 10
+	mov ecx, 0
+	div ecx
 
 	; page fault!!
 	;mov ecx, 0x12345678
-	;mov eax, dword [0x01000000]
+	;mov dword [0xF0000000], ecx
 	;-------------------------------------------------------------
 
 	;push 4
