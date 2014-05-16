@@ -42,9 +42,7 @@ _kernel_init_idt_table:
 	; IDT 정보가 올라갈 시작 메모리 주소 설정
 	; 기본적으로 GDT 정보 바로 다음에 올라간다.
 
-	mov esi, 0x00401000
-	; 이부분의 값은 kernel.memory_map.txt 파일의 메모리 맵 참조
-	mov dword [idtr], esi
+	mov esi, dword [idtr]
 	mov word [esi], 256*8-1
 	; IDT 전체 크기 초기화
 	mov eax, esi
@@ -812,7 +810,7 @@ __int_etc_interrupt:
 ; DPL : 특권 레벨(2bit)
 ; D : 16bit 인지? 32bit 인지?
 ;---------------------------------------
-idtr:			dd 0x00000000
+idtr:			dd 0x00401000
 ;	dw 256 * 8 - 1
 ;	dd 0
 ;__idt_nothing:
