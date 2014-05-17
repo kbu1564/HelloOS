@@ -1,11 +1,11 @@
-HelloOS
+HelloOS ê°œë°œ í™˜ê²½
 =======
+The HelloOS is written in assembly language.
+> HelloOSëŠ” ì˜¤ì§ ì–´ì…ˆë¸”ë¦¬ì–´ë¡œë§Œ ìž‘ì„±ë©ë‹ˆë‹¤.
+> C/C++ì€ ì¼ì²´ ì‚¬ìš©ë˜ì§€ ì•Šìœ¼ë©° ì˜¤ì§ NASMê³¼ Makefile ë§Œì„ ì´ìš©í•˜ì—¬ ì œìž‘ ë©ë‹ˆë‹¤.
 
-  The HelloOS is written in assembly language.
-  HelloOS´Â ¿ÀÁ÷ ¾î¼Àºí¸®¾î·Î¸¸ ÀÛ¼ºµË´Ï´Ù.
-  C/C++Àº ÀÏÃ¼ »ç¿ëµÇÁö ¾ÊÀ¸¸ç ¿ÀÁ÷ NASM°ú Makefile ¸¸À» ÀÌ¿ëÇÏ¿© Á¦ÀÛ µË´Ï´Ù.
-
-  ÇØ´ç ¿î¿µÃ¼Á¦´Â USB¿¡ ¼³Ä¡µÇ´Â ±¸Á¶ÀÌ¸ç ºÎÆÃÀÌ °¡´ÉÇÏµµ·Ï µÇ¾îÀÖ½À´Ï´Ù.
-  ¿î¿µÃ¼Á¦´Â ÇöÀç 8GB, 16GB USB¿¡ ÇÑÁ¤ÀûÀ¸·Î ¼³Ä¡°¡ °¡´ÉÇÏµµ·Ï µÇ¾îÀÖÀ¸¸ç ¼³Ä¡ °úÁ¤Àº ÃßÈÄ ÀÛ¼ºÇÏ¿© º» ÆäÀÌÁö¿¡ ¿Ã·ÁÁö°Ô µË´Ï´Ù.
-
-  ¿î¿µÃ¼Á¦¸¦ USB¿¡ ´ãÀº »óÅÂ·Î Å¸ ¿î¿µÃ¼Á¦¿¡¼­ ÀÏ¹Ý USBÃ³·³ »ç¿ëÀÌ °¡´ÉÇÏ¸ç ÃßÈÄ USB·Î ºÎÆÃÇØ¾ß¸¸ º¼ ¼ö ÀÖ´Â ¹®¼­ Çü½ÄÀ¸·Î °³¹ßÇØ º¼ »ý°¢ÀÔ´Ï´Ù.
+HelloOS ì†Œê°œ
+=======
+- í•´ë‹¹ ìš´ì˜ì²´ì œëŠ” USBì— ì„¤ì¹˜ë˜ëŠ” êµ¬ì¡°ì´ë©° ë¶€íŒ…ì´ ê°€ëŠ¥í•˜ë„ë¡ ë˜ì–´ìžˆìŠµë‹ˆë‹¤.
+- ìš´ì˜ì²´ì œëŠ” í˜„ìž¬ 8GB, 16GB USBì— í•œì •ì ìœ¼ë¡œ ì„¤ì¹˜ê°€ ê°€ëŠ¥í•˜ë„ë¡ ë˜ì–´ìžˆìœ¼ë©° ì„¤ì¹˜ ê³¼ì •ì€ ì¶”í›„ ìž‘ì„±í•˜ì—¬ ë³¸ íŽ˜ì´ì§€ì— ì˜¬ë ¤ì§€ê²Œ ë©ë‹ˆë‹¤.
+- ìš´ì˜ì²´ì œë¥¼ USBì— ë‹´ì€ ìƒíƒœë¡œ íƒ€ ìš´ì˜ì²´ì œì—ì„œ ì¼ë°˜ USBì²˜ëŸ¼ ì‚¬ìš©ì´ ê°€ëŠ¥í•©ë‹ˆë‹¤.
