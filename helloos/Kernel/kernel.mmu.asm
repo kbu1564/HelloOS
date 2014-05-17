@@ -1,18 +1,5 @@
-; 페이징 초기화 함수
-_kernel_init_paging:
-	mov ax, DataDescriptor
-	mov es, ax
-	mov ds, ax
-
-	;mov eax, 0x00402000
-	; 이부분의 값은 kernel.memory_map.txt 파일의 메모리 맵 참조
-	;mov dword [PageDirectory], eax
-	; 커널의 마지막 부분에 바로
-	; 페이지 디렉토리 셋팅
-
-	; 페이징 처리를 하지 않은 경우
-	; 기존의 물리 메모리 주소의 범위 안에서 사용 할 수 있으므로
-	; 페이징 기능을 통해 가상 메모리를 사용한다.
+; 페이지 디렉토리 테이블과 페이지 테이블 앤트리의 자료 구조 공간을 전부 초기화 시킨다.
+_kernel_init_pdpt:
 	;-----------------------------------------------------------
 	; Page Directory init - 0x00402000
 	;-----------------------------------------------------------
@@ -20,92 +7,121 @@ _kernel_init_paging:
 	; 페이지 디렉토리가 위치할 메모리 주소
 	mov eax, 0
 	; 관리레벨, 읽기/쓰기, 존재여부
-	mov ecx, 1024
+	mov ecx, 1024 * 1024 * 4 + 1024 * 4
 	; 페이지 개수
-.page_directory_init:
+.pd_pt_init:
 	mov dword [es:edi], eax
-
 	add edi, 4
 	; 다음 인덱스를 가리키도록 한다.
-	dec ecx
-	loop .page_directory_init
+	loop .pd_pt_init
 
-	;-----------------------------------------------------------
-	; PD의 커널 영역 표시 0x00000000 ~ 0x000FFFFF
-	; PT_Addr = 0x00403000
-	;-----------------------------------------------------------
-	mov edi, dword [PageDirectory]
-	add edi, 0x0000 * 4
-	; edi = PD[0];
-	mov eax, edi
-	add eax, (0x0000+1)*0x1000
-	; eax = &PT;
-	or eax, 0x01
-	; eax |= 0x01;
-	mov dword [es:edi], eax
-	; PD[0] = &PT;
-	; 0번째 엔트리 - 커널 영역 테이블 설정
-	;-----------------------------------------------------------
-	; PD의 커널 영역 표시 0x00400000 ~ 0x00407000
-	; PT_Addr = 0x00404000
-	;-----------------------------------------------------------
-	mov edi, dword [PageDirectory]
-	add edi, 0x0001 * 4
-	; edi = PD[1];
-	mov eax, edi
-	add eax, (0x0001+1)*0x1000
-	; eax = &PT;
-	or eax, 0x01
-	; eax |= 0x01;
-	mov dword [es:edi], eax
-	; PD[1] = &PT;
-	; 1번째 엔트리 - 커널 영역 테이블 설정
-	;-----------------------------------------------------------
+	ret
 
-	;-----------------------------------------------------------
-	; Kernel Page Table init - 0x00403000
-	;-----------------------------------------------------------
-	; 0x00000000 ~ 0x000FFFFF 초기화
-	; 1MB 이하 영역 커널 영역으로 초기화
-	;-----------------------------------------------------------
-	mov edi, dword [PageDirectory]
-	add edi, (0x0000+1)*0x1000
-	; 페이지 디렉토리 바로 뒤에 페이지 테이블이 위치한다.
-	mov eax, 0x00000000
-	or eax, 0x01
-	; 속성 부여 : 감시 레벨, 읽기/쓰기, 존재여부
-	mov ecx, 256
-	; 페이지 개수
-	; 1MB 이하의 영역 맵핑
-.page_table_0x00000000_init:
-	mov dword [es:edi], eax
+; esi에 설정된 논리주소에 대한 페이지 디렉토리 엔트리에 해당하는
+; 페이지 테이블의 위치 주소값을 계산 하여 디렉토리 앤트리 값을 설정한 후
+; 해당 페이지 테이블을 초기화 한다
+;
+; 이 함수는 커널권한의 메모리를 확보합니다.
+; 요청한 주소로 부터 지정된 크기의 커널 메모리를 할당 받습니다.
+;
+; 함수 형태:
+; A의 논리 주소부터 B만큼의 공간을 실제 물리메모리의 C에 매핑합니다.
+; void _kernel_alloc(void* A, void* C, size_t B);
+;
+; 주의:
+; 이 함수는 메모리의 사용여부와 관계없이 지정된 값만큼의 메모리를 무조건 매핑시킵니다.
+;
+; push 커널 페이지를 할당할 논리 메모리 시작 주소
+; push 매핑할 실제 물리 메모리 시작 주소
+; push 할당할 메모리의 크기(4KB의 배수단위로 생성)
+_kernel_alloc:
+	push ebp
+	mov ebp, esp
+	pusha
+
+	mov ax, DataDescriptor
+	mov es, ax
+	;----------------------------------------------
+
+	mov eax, dword [ebp+16]
+	shr eax, 22
+	mov ebx, eax
+	; 페이지 디렉토리 엔트리 10bit 구하기
+	shl eax, 2
+	; eax = eax * 4;
+
+	mov esi, dword [PageDirectory]
+	add esi, eax
+	; PageDirectory Entry 찾기
+	;----------------------------------------------
+
+	mov eax, ebx
+	mov edx, 0x1000
+	mul edx
+	; Page Table 생성 위치
+	; 페이지 옵션 설정
+	add eax, dword [PageDirectory]
 	add eax, 0x1000
-	; 다음 페이지 영역의 주소를 가리키도록 한다.
-
-	add edi, 4
-	loop .page_table_0x00000000_init
-
-	;-----------------------------------------------------------
-	; Kernel Page Table init - 0x00404000
-	;-----------------------------------------------------------
-	; 0x00400000 ~ 0x00407000 초기화
-	; 커널 자료구조 영역
-	;-----------------------------------------------------------
-	mov edi, dword [PageDirectory]
-	add edi, (0x0001+1)*0x1000
-	; 페이지 디렉토리 바로 뒤에 페이지 테이블이 위치한다.
-	mov eax, 0x00400000
+	mov edi, eax
 	or eax, 0x01
-	; 속성 부여 : 감시 레벨, 읽기/쓰기, 존재여부
-	mov ecx, 7
-	; 페이지 개수
-.page_table_0x00400000_init:
-	mov dword [es:edi], eax
-	add eax, 0x1000
-	; 다음 페이지 영역의 주소를 가리키도록 한다.
+	mov dword [esi], eax
+	; Page Table 위치 셋팅
+	;----------------------------------------------
 
-	add edi, 4
-	loop .page_table_0x00400000_init
+	mov esi, dword [ebp+16]
+	shl esi, 10
+	shr esi, 22
+	; 페이지 테이블 앤트리 구하기
+	shl esi, 2
+	; esi = esi * 4;
+	add esi, edi
+	mov edi, dword [ebp+12]
+	or edi, 0x01
+	mov ecx, dword [ebp+8]
+.page_alloc_loop:
+	mov dword [esi], edi
+
+	add edi, 0x1000
+	add esi, 4
+	loop .page_alloc_loop
+	; 지정된 크기만큼만 물리메모리에 대응시키기
+
+	popa
+	mov esp, ebp
+	pop ebp
+	ret 12
+
+; 페이징 초기화 함수
+_kernel_init_paging:
+	mov ax, DataDescriptor
+	mov es, ax
+
+	call _kernel_init_pdpt
+	; 페이징 자료구조 영역 초기화
+
+	;-----------------------------------------------------------
+	; 커널 영역 할당 0x00000000 ~ 0x00100000
+	;-----------------------------------------------------------
+	push 0x00000000
+	push 0x00000000
+	push (0x00100000-0x00000000)/0x1000
+	call _kernel_alloc
+
+	;-----------------------------------------------------------
+	; 커널 영역 할당 0x00400000 ~ 0x00800000
+	;-----------------------------------------------------------
+	push 0x00400000
+	push 0x00400000
+	push (0x00800000-0x00400000)/0x1000
+	call _kernel_alloc
+
+	;-----------------------------------------------------------
+	; 커널 영역 할당 0x00800000 ~ 0x00805000
+	;-----------------------------------------------------------
+	push 0x00800000
+	push 0x00800000
+	push (0x00805000-0x00800000)/0x1000
+	call _kernel_alloc
 
 	mov eax, dword [PageDirectory]
 	mov cr3, eax
