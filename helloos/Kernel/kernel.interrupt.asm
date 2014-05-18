@@ -384,12 +384,6 @@ _kernel_exception_handler:
 	push er_msg
 	call _print32
 
-	push 4
-	push er_msg
-	push 2
-	push 10
-	call _print_hex
-
 	ret
 
 er_msg: db 'Exception!!!', 0

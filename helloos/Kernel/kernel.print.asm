@@ -5,36 +5,34 @@
 _print32:
 	push ebp
 	mov ebp, esp
-	pusha
-	; register push
-
-	mov al, [ebp+16]
-	mov cl, 80*2
-	mul cl
-
-	mov si, ax
-	mov di, [ebp+8]
-	mov ch, [ebp+12]
-	; 초기화 작업 수행
 
 	mov ax, VideoDescriptor
 	mov es, ax
+
+	mov eax, [ebp+16]
+	mov ecx, 80*2
+	mul ecx
+
+	mov edi, eax
+	mov esi, dword [ebp+8]
+	mov ecx, dword [ebp+12]
+	; 초기화 작업 수행
 .for_loop:
-	cmp byte [di], 0
+	mov dl, byte [esi]
+
+	cmp dl, 0
 	je .for_end
 
-	mov cl, byte [di]
-	mov byte [es:si], cl
+	mov byte [es:edi], dl
 	; 문자 1바이트를 비디오 메모리로 복사
-	mov byte [es:si+1], ch
+	mov byte [es:edi+1], cl
 
-	add si, 2
-	add di, 1
+	add edi, 2
+	add esi, 1
 
 	jmp .for_loop
 	; 루프 순회
 .for_end:
-	popa
 	mov esp, ebp
 	pop ebp
 	ret 12

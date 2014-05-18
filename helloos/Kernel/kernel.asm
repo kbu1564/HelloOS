@@ -14,10 +14,6 @@ _entry:
 	%include "../Bootloader/loader.print.asm"
 	%include "../Bootloader/loader.debug.dump.asm"
 	; 기본 라이브러리의 경우 부트로더쪽의 함수를 그대로 가져와 사용한다.
-	%include "../Bootloader/loader.graphice.asm"
-	; vesa 관련 bios 함수 라이브러리
-	%include "../Bootloader/loader.vesa.mode.asm"
-	; vesa 비디오 모드 상수 정의
 	; 커널 라이브러리
 _start:
 	; Kernel Entry Point
@@ -25,14 +21,6 @@ _start:
 	push 0x0A
 	push KernelLoadingMessage
 	call _print
-
-	; 전환할 해상도 정보 셋팅
-	mov word [VesaResolutionInfo.XResolution], 1024
-	mov word [VesaResolutionInfo.YResolution], 768
-	mov byte [VesaResolutionInfo.BitsPerPixel], 32
-
-	;call _auto_resolution_vesa_mode
-	; 그래픽 모드로 해상도 변경
 
 	cli
 	; 이 부분에서 32bit Protected Mode 로 전환할 준비를 한다.
@@ -82,8 +70,6 @@ _library:
 	; gdt table 정의
 	;%include "kernel.file.asm"
 	; 파일경로를 인자로 하여 해당 파일의 내용을 리턴하는 함수
-	%include "kernel.vesa.graphice.asm"
-	; 32bit 커널용 그래픽 모드 전환 라이브러리
 	; 비디오 카드 표준에 관한 VESA 처리에 대한 라이브러리
 	%include "kernel.a20.mode.asm"
 	; 32bit 에서 64KB 까지의 메모리만 접근 가능한 제한을 풀기 위한
@@ -193,14 +179,14 @@ _protect_entry:
 	call _kernel_load_tss
 	; TSS 설정
 
-	;-------------------------------------------------------------
-	; 인터럽트 발생 테스트
-	; 여러가지 인터럽트 예외를 강제적으로 발생시킨다.
-	;-------------------------------------------------------------
-	; devide error!!
-	mov eax, 10
-	mov ecx, 0
-	div ecx
+;	;-------------------------------------------------------------
+;	; 인터럽트 발생 테스트
+;	; 여러가지 인터럽트 예외를 강제적으로 발생시킨다.
+;	;-------------------------------------------------------------
+;	; devide error!!
+;	mov eax, 10
+;	mov ecx, 0
+;	div ecx
 
 ;	;-----------------------------------------------------------------------
 ;	; 0xF0000000의 논리 주소를 0x01000000의 물리 메모리 주소로 Mapping
@@ -216,8 +202,26 @@ _protect_entry:
 ;	mov dword [0xF0000000], ecx
 	;-------------------------------------------------------------
 
-	;push 4
-	;push 0x00FF0000
+	;push dword [PhysBasePtr]
+	push 0xE0000000
+	push 0x00900000
+	push (0xE0001000-0xE0000000)/0x1000
+	call _kernel_alloc
+	; 커널 영역의 비디오 메모리 할당
+
+	mov ecx, 0x12345678
+	mov dword [0xE0000000], ecx
+
+	mov ax, DataDescriptor
+	mov es, ax
+
+	push 3
+	push 10
+	push dword [0xE0000000]
+	call _print_hex32
+
+	;push 3
+	;push 0xFF0000
 	;call _set_screen_clear
 	; 화면을 전부 빨강으로 초기화 함
 .end_kernel:

@@ -4,7 +4,7 @@ _set_screen_clear:
 	push ebp
 	mov ebp, esp
 
-	mov ecx, 1024*768*4
+	mov ecx, 800*600*4
 	; loop È½¼ö ¼ÂÆÃ
 
 	mov ax, VGADescriptor
