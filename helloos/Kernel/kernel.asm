@@ -35,7 +35,6 @@ _start:
 	;-------------------------------------------
 	mov eax, cr0
 	or eax, 0x00000001
-	;mov eax, 0x4000003B
 	mov cr0, eax
 	; 보호모드로 전환
 
@@ -202,7 +201,6 @@ _protect_entry:
 ;	mov dword [0xF0000000], ecx
 	;-------------------------------------------------------------
 
-	;push dword [PhysBasePtr]
 	push 0xE0000000
 	push 0x00900000
 	push (0xE0001000-0xE0000000)/0x1000
@@ -211,19 +209,6 @@ _protect_entry:
 
 	mov ecx, 0x12345678
 	mov dword [0xE0000000], ecx
-
-	mov ax, DataDescriptor
-	mov es, ax
-
-	push 3
-	push 10
-	push dword [0xE0000000]
-	call _print_hex32
-
-	;push 3
-	;push 0xFF0000
-	;call _set_screen_clear
-	; 화면을 전부 빨강으로 초기화 함
 .end_kernel:
 	hlt
 	jmp .end_kernel

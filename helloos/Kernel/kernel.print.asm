@@ -5,6 +5,7 @@
 _print32:
 	push ebp
 	mov ebp, esp
+	pusha
 
 	mov ax, VideoDescriptor
 	mov es, ax
@@ -33,6 +34,7 @@ _print32:
 	jmp .for_loop
 	; 루프 순회
 .for_end:
+	popa
 	mov esp, ebp
 	pop ebp
 	ret 12

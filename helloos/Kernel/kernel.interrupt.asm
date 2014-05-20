@@ -364,10 +364,35 @@ _kernel_load_idt:
 ; edi : interrupt number
 ; esi : error code
 _kernel_interrupt_handler:
-	push 8
-	push 0x04
+	push 24
+	push 0x0A
 	push in_msg
 	call _print32
+
+	push 24
+	push 12
+	push edi
+	call _print_hex32
+	ret
+
+; 예외 처리 핸들러
+; edi : exception number
+; esi : error code
+_kernel_exception_handler:
+	push 23
+	push 0x0A
+	push er_msg
+	call _print32
+
+	push 23
+	push 12
+	push edi
+	call _print_hex32
+
+	push 23
+	push 34
+	push esi
+	call _print_hex32
 
 	sub edi, 32
 	push edi
@@ -375,19 +400,8 @@ _kernel_interrupt_handler:
 	; PIC에게 인터럽트 종료 신호 보내기
 	ret
 
-; 예외 처리 핸들러
-; edi : exception number
-; esi : error code
-_kernel_exception_handler:
-	push 7
-	push 0x04
-	push er_msg
-	call _print32
-
-	ret
-
-er_msg: db 'Exception!!!', 0
-in_msg: db 'Interrupt!!!', 0
+er_msg: db 'Exception :           , ErrorNo :           ', 0
+in_msg: db 'Interrupt :           ', 0
 
 ;-----------------------------------------------------
 ; Exception handler

@@ -32,7 +32,7 @@ _kernel_init_gdt_table:
 
 	push VGADescriptor
 	push 0x000FFFFF
-	push dword [PhysBasePtr]
+	push 0x00000000
 	push 010010010010b
 	call _kernel_set_gdt
 	; VGA memory Address Setting
