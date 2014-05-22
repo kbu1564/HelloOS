@@ -413,38 +413,6 @@ _kernel_exception_handler:
 	push 52
 	push eax
 	call _print_hex32
-
-	;------------------------------------------------
-	mov eax, ds
-	push 22
-	push 52
-	push eax
-	call _print_hex32
-
-	mov eax, es
-	push 21
-	push 52
-	push eax
-	call _print_hex32
-
-	mov eax, ss
-	push 20
-	push 52
-	push eax
-	call _print_hex32
-
-	mov eax, fs
-	push 19
-	push 52
-	push eax
-	call _print_hex32
-
-	mov eax, gs
-	push 18
-	push 52
-	push eax
-	call _print_hex32
-
 .L1:
 	hlt
 	jmp .L1

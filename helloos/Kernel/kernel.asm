@@ -34,9 +34,6 @@ _start:
 	mov gs, eax
 	; segment init
 
-	; 그래픽 모드 전환 부분
-	int 10h
-
 	cli
 	; 이 부분에서 32bit Protected Mode 로 전환할 준비를 한다.
 
@@ -252,7 +249,6 @@ _protect_entry:
 	push 0x04
 	push InfoFalseMessage
 	call _print32
-	; A20 전환 실패 혹은 메모리 부족으로 인한 실패
 	jmp .end_kernel
 
 .info_true:
@@ -263,7 +259,6 @@ _protect_entry:
 	push 0x0A
 	push InfoTrueMessage
 	call _print32
-	; 물리메모리가 최소 64MiB가 되지 않음
 
 	inc esi
 	push esi
