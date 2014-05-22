@@ -15,6 +15,9 @@
 	push ax
 	mov ax, ds
 	push ax
+
+	mov ax, DataDescriptor
+	mov es, ax
 %endmacro
 ; 각종 레지스터와 세그먼트 상태를 복구하는 매크로
 %macro SEG_REG_LOAD 0
@@ -365,7 +368,10 @@ _kernel_load_idt:
 ; esi : error code
 _kernel_interrupt_handler:
 	push 24
-	push 0x0A
+	push 0
+	call _print32_gotoxy
+
+	push 0x07
 	push in_msg
 	call _print32
 
@@ -373,6 +379,11 @@ _kernel_interrupt_handler:
 	push 12
 	push edi
 	call _print_hex32
+
+	sub edi, 32
+	push edi
+	call _send_eoi_to_pic
+	; PIC에게 인터럽트 종료 신호 보내기
 	ret
 
 ; 예외 처리 핸들러
@@ -380,7 +391,10 @@ _kernel_interrupt_handler:
 ; esi : error code
 _kernel_exception_handler:
 	push 23
-	push 0x0A
+	push 0
+	call _print32_gotoxy
+
+	push 0x07
 	push er_msg
 	call _print32
 
@@ -394,14 +408,53 @@ _kernel_exception_handler:
 	push esi
 	call _print_hex32
 
-	sub edi, 32
-	push edi
-	call _send_eoi_to_pic
-	; PIC에게 인터럽트 종료 신호 보내기
+	mov eax, cr2
+	push 23
+	push 52
+	push eax
+	call _print_hex32
+
+	;------------------------------------------------
+	mov eax, ds
+	push 22
+	push 52
+	push eax
+	call _print_hex32
+
+	mov eax, es
+	push 21
+	push 52
+	push eax
+	call _print_hex32
+
+	mov eax, ss
+	push 20
+	push 52
+	push eax
+	call _print_hex32
+
+	mov eax, fs
+	push 19
+	push 52
+	push eax
+	call _print_hex32
+
+	mov eax, gs
+	push 18
+	push 52
+	push eax
+	call _print_hex32
+
+.L1:
+	hlt
+	jmp .L1
+	; 예외 발생시 아직은 커널영역의 예외 이므로
+	; 무한루프를 실행시킨다.
+
 	ret
 
-er_msg: db 'Exception :           , ErrorNo :           ', 0
-in_msg: db 'Interrupt :           ', 0
+er_msg: db 'Exception :           , ErrorNo :           , CR2 :           ', 0x0A, 0
+in_msg: db 'Interrupt :           ', 0x0A, 0
 
 ;-----------------------------------------------------
 ; Exception handler

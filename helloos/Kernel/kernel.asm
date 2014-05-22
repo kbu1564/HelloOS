@@ -17,10 +17,25 @@ _entry:
 	; 커널 라이브러리
 _start:
 	; Kernel Entry Point
-	push 0
-	push 0x0A
-	push KernelLoadingMessage
-	call _print
+
+	;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	; 실제 머신상에서 세그먼트 초기화 작업을 수행하지 않을 경우
+	; int 0x0D #13 General protection fault 오류를 발생 시킨다.
+	; 이는 GDT 정보가 로드되면서 세그먼트들이 기존의 gs, fs 등의 세그먼트를 참조하면서
+	; 등록되지 않은 GDT 정보를 참조하기에 발생되는 예외들이다.
+	;
+	; 이 경우 초기화 작업을 수행시켜 주면 된다.
+	; 참고 : http://www.joinc.co.kr/modules/moniwiki/wiki.php/%BA%B8%C8%A3%B8%F0%B5%E5
+	;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	xor eax, eax
+	mov es, eax
+	mov ds, eax
+	mov fs, eax
+	mov gs, eax
+	; segment init
+
+	; 그래픽 모드 전환 부분
+	int 10h
 
 	cli
 	; 이 부분에서 32bit Protected Mode 로 전환할 준비를 한다.
@@ -45,12 +60,6 @@ _start:
 
 	jmp dword CodeDescriptor:_protect_entry
 
-.super_failure:
-	push 1
-	push 0x04
-	push NotSuperVideoModeMessage
-	call _print
-	; VBE 2.0 이상 지원하지 않는 경우
 .end_loader:
 	hlt
 	jmp .end_loader
@@ -83,29 +92,31 @@ _library:
 _global_variables:
 	;------------------------------------------------------------------------------------
 	; 변수 처리
-	KernelLoadingMessage:			db 'Kernel Load Success', 0
-	; 커널 로딩 완료 메시지
-	KernelProtectModeMessage:		db 'Switching Kernel Protected Mode', 0
+	InfoTrueMessage:			db ' O K ', 0
+	InfoFalseMessage:			db 'FALSE', 0
+	; TRUE/ FALSE
+	KernelProtectModeMessage:	db 'Switching Kernel Protected Mode -- [     ]', 0x0A, 0
 	; 커널 보호모드 진입 완료 메시지
-	NotSuperVideoModeMessage:		db 'This computer doesn`t support VBE 2.0.', 0
-	; 해당 해상도의 비디오 모드 지원 불가 메시지
-	A20SwitchingFailureMessage:		db 'A20 Switching failure', 0
-	A20SwitchingSuccessMessage:		db 'A20 Switching success', 0
+	A20SwitchingCheckMessage:	db 'A20 Switching Check -------------- [     ]', 0x0A, 0
 	; A20 스위칭 성공 여부에 따른 메시지
-	EnoughMemoryFailureMessage:		db '64MiB Physical Memory check failure', 0
-	EnoughMemorySuccessMessage:		db '64MiB Physical Memory check success', 0
+	EnoughMemoryCheckMessage:	db '64MiB Physical Memory Check ------ [     ]', 0x0A, 0
 	; 최소 64MiB 이상의 물리메모리인가에 따른 메시지
-	Paging32SuccessMessage:			db '32bit None-PAE Paging Success', 0
+	Paging32ModeMessage:		db '32bit None-PAE Paging Mode ------- [     ]', 0x0A, 0
 	; 32bit 페이징 처리 완료 메시지
 	;------------------------------------------------------------------------------------
 
 _protect_entry:
 	; 32bit Protected Mode 시작 엔트리 포인트 지점
-	push 1
-	push 0x0A
+	push 0x07
 	push KernelProtectModeMessage
 	call _print32
-	; 보호모드 전환 성공 메시지
+	; 보호모드 전환 메시지
+
+	mov esi, 0
+	mov edi, .chk_pm_true
+	jmp .info_true
+.chk_pm_true:
+	; 보호모드 전환 성공
 
 	;-------------------------------------------------------------
 	; A20 활성화 및 메모리 체크
@@ -116,29 +127,38 @@ _protect_entry:
 	call _test_a20_mode
 	; 이 부분에서 A20 기능의 활성화 여부를 테스트
 
+	push 0x07
+	push A20SwitchingCheckMessage
+	call _print32
+	; A20 스위칭 처리 메시지
+
 	cmp ax, 0
-	je .a20_switching_failure
-	; A20 전환 실패 혹은 메모리 부족으로 인한 실패인 경우 이므로
+	je .info_false
+	; A20 전환 실패인 경우 이므로
 	; 시스템을 종료 시킨다.
 
-	push 2
-	push 0x0A
-	push A20SwitchingSuccessMessage
-	call _print32
-	; A20 스위칭 처리 성공
+	mov esi, 1
+	mov edi, .chk_a20_true
+	jmp .info_true
+.chk_a20_true:
+	; A20 기능이 활성화 되어있음
 
 	call _kernel_is_enough_memory
 	; OS 실행에 필요한 최소한의 64MB 메모리가 존재하는지 체크
 
-	cmp ax, 0
-	je .mem_enough_failure
-	; A20 전환 실패 혹은 메모리 부족으로 인한 실패인 경우 이므로
-	; 시스템을 종료 시킨다.
-	
-	push 3
-	push 0x0A
-	push EnoughMemorySuccessMessage
+	push 0x07
+	push EnoughMemoryCheckMessage
 	call _print32
+
+	cmp ax, 0
+	je .info_false
+	; 메모리 부족으로 인한 실패인 경우 이므로
+	; 시스템을 종료 시킨다.
+
+	mov esi, 2
+	mov edi, .chk_mem_true
+	jmp .info_true
+.chk_mem_true:
 	; 64MiB 이상의 메모리가 확보되어 있음
 
 	call _init_pic
@@ -165,7 +185,18 @@ _protect_entry:
 
 	call _kernel_init_paging
 	; 페이징 초기화, 활성화
-	; 이놈이 실행된 순간 모든 주소는 논리주소로 해석됨...
+	; 실행된 순간 모든 주소는 논리주소로 해석됨...
+
+	push 0x07
+	push Paging32ModeMessage
+	call _print32
+	; 페이징 관련 메시지
+
+	mov esi, 3
+	mov edi, .chk_paging_true
+	jmp .info_true
+.chk_paging_true:
+	; 페이징 기능 활성화 완료
 
 	mov ax, 0
 	call _mask_pic
@@ -201,31 +232,42 @@ _protect_entry:
 ;	mov dword [0xF0000000], ecx
 	;-------------------------------------------------------------
 
-	push 0xE0000000
-	push 0x00900000
-	push (0xE0001000-0xE0000000)/0x1000
-	call _kernel_alloc
-	; 커널 영역의 비디오 메모리 할당
-
-	mov ecx, 0x12345678
-	mov dword [0xE0000000], ecx
+;	push 0xE0000000
+;	push 0x00900000
+;	push (0xE0001000-0xE0000000)/0x1000
+;	call _kernel_alloc
+;	; 커널 영역의 비디오 메모리 할당
+;
+;	mov ecx, 0x12345678
+;	mov dword [0xE0000000], ecx
 .end_kernel:
 	hlt
 	jmp .end_kernel
 
-.a20_switching_failure:
-	push 2
+.info_false:
+	push esi
+	push 36
+	call _print32_gotoxy
+
 	push 0x04
-	push A20SwitchingFailureMessage
+	push InfoFalseMessage
 	call _print32
 	; A20 전환 실패 혹은 메모리 부족으로 인한 실패
 	jmp .end_kernel
 
-.mem_enough_failure:
-	push 3
-	push 0x04
-	push EnoughMemoryFailureMessage
+.info_true:
+	push esi
+	push 36
+	call _print32_gotoxy
+
+	push 0x0A
+	push InfoTrueMessage
 	call _print32
 	; 물리메모리가 최소 64MiB가 되지 않음
-	jmp .end_kernel
-	
+
+	inc esi
+	push esi
+	push 0
+	call _print32_gotoxy
+	; 다음줄로 포인터 이동
+	jmp edi

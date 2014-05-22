@@ -55,7 +55,9 @@ _start:
 	push KernelLoadError
 	call _print
 
+.end_bootloader:
 	hlt
+	jmp .end_bootloader
 
 KernelFileName:		db 'KERNEL  ', 'SYS', 0
 ; 로드할 커널 파일의 이름

@@ -25,9 +25,10 @@ _print_hex32:
 	mov ah, 0x04
 	; 색상값 셋팅
 	mov ecx, 8
-	;mov edi, dword [ebp+8]
+	mov edi, ebp
+	add edi, 11
 .hex4bitLoop:
-	mov al, byte [ebp+11]
+	mov al, byte [edi]
 
 	;test ecx, 1
 	mov edx, ecx
@@ -36,7 +37,7 @@ _print_hex32:
 	; 최하위 1bit가 1이면 홀수 0이면 짝수
 	jne .hex4bit
 
-	dec ebp
+	dec edi
 	; 다음 메모리 값 검사
 	shl al, 4
 .hex4bit:

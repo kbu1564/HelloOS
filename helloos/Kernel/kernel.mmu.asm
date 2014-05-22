@@ -138,11 +138,6 @@ _kernel_init_paging:
 	; 페이징을 시작하기 위해 컨트롤 레지스터에서
 	; 최상위 비트를 1로 셋팅
 
-	push 4
-	push 0x0A
-	push Paging32SuccessMessage
-	call _print32
-
 	ret
 
 ; 운영체제가 실행되는데 필요한 최소 64MB의 메모리가 여유공간으로
