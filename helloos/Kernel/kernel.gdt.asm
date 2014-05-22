@@ -33,8 +33,10 @@ _kernel_init_gdt_table:
 	push VGADescriptor
 	push 0x000FFFFF
 	push 0x00000000
-	push 110010010010b
+	push 010010010010b
 	call _kernel_set_gdt
+	; VGA memory Address Setting
+	; VGA Descriptor 기준 주소 셋팅
 
 	push TSSDescriptor
 	push 0x000FFFFF

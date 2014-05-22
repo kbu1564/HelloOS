@@ -1,7 +1,4 @@
 ; NULL 문자를 만날때 까지 출력합니다.
-; dx : 출력할 문자열의 시작 address
-; ch : 출력할 문자열의 색상 옵션값을 설정 합니다.
-; al : 출력할 문자열의 라인 수
 _print:
 	push bp
 	mov bp, sp
