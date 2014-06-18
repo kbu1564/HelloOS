@@ -1,186 +1,186 @@
-; ÆäÀÌÁö µð·ºÅä¸® Å×ÀÌºí°ú ÆäÀÌÁö Å×ÀÌºí ¾ØÆ®¸®ÀÇ ÀÚ·á ±¸Á¶ °ø°£À» ÀüºÎ ÃÊ±âÈ­ ½ÃÅ²´Ù.
+; íŽ˜ì´ì§€ ë””ë ‰í† ë¦¬ í…Œì´ë¸”ê³¼ íŽ˜ì´ì§€ í…Œì´ë¸” ì•¤íŠ¸ë¦¬ì˜ ìžë£Œ êµ¬ì¡° ê³µê°„ì„ ì „ë¶€ ì´ˆê¸°í™” ì‹œí‚¨ë‹¤.
 _kernel_init_pdpt:
-	;-----------------------------------------------------------
-	; Page Directory init - 0x00402000
-	;-----------------------------------------------------------
-	mov edi, dword [PageDirectory]
-	; ÆäÀÌÁö µð·ºÅä¸®°¡ À§Ä¡ÇÒ ¸Þ¸ð¸® ÁÖ¼Ò
-	mov eax, 0
-	; °ü¸®·¹º§, ÀÐ±â/¾²±â, Á¸Àç¿©ºÎ
-	mov ecx, 1024 * 1024 * 4 + 1024 * 4
-	; ÆäÀÌÁö °³¼ö
+    ;-----------------------------------------------------------
+    ; Page Directory init - 0x00402000
+    ;-----------------------------------------------------------
+    mov edi, dword [PageDirectory]
+    ; íŽ˜ì´ì§€ ë””ë ‰í† ë¦¬ê°€ ìœ„ì¹˜í•  ë©”ëª¨ë¦¬ ì£¼ì†Œ
+    mov eax, 0
+    ; ê´€ë¦¬ë ˆë²¨, ì½ê¸°/ì“°ê¸°, ì¡´ìž¬ì—¬ë¶€
+    mov ecx, 1024 * 1024 * 4 + 1024 * 4
+    ; íŽ˜ì´ì§€ ê°œìˆ˜
 .pd_pt_init:
-	mov dword [es:edi], eax
-	add edi, 4
-	; ´ÙÀ½ ÀÎµ¦½º¸¦ °¡¸®Å°µµ·Ï ÇÑ´Ù.
-	loop .pd_pt_init
+    mov dword [es:edi], eax
+    add edi, 4
+    ; ë‹¤ìŒ ì¸ë±ìŠ¤ë¥¼ ê°€ë¦¬í‚¤ë„ë¡ í•œë‹¤.
+    loop .pd_pt_init
 
-	ret
+    ret
 
-; esi¿¡ ¼³Á¤µÈ ³í¸®ÁÖ¼Ò¿¡ ´ëÇÑ ÆäÀÌÁö µð·ºÅä¸® ¿£Æ®¸®¿¡ ÇØ´çÇÏ´Â
-; ÆäÀÌÁö Å×ÀÌºíÀÇ À§Ä¡ ÁÖ¼Ò°ªÀ» °è»ê ÇÏ¿© µð·ºÅä¸® ¾ØÆ®¸® °ªÀ» ¼³Á¤ÇÑ ÈÄ
-; ÇØ´ç ÆäÀÌÁö Å×ÀÌºíÀ» ÃÊ±âÈ­ ÇÑ´Ù
+; esiì— ì„¤ì •ëœ ë…¼ë¦¬ì£¼ì†Œì— ëŒ€í•œ íŽ˜ì´ì§€ ë””ë ‰í† ë¦¬ ì—”íŠ¸ë¦¬ì— í•´ë‹¹í•˜ëŠ”
+; íŽ˜ì´ì§€ í…Œì´ë¸”ì˜ ìœ„ì¹˜ ì£¼ì†Œê°’ì„ ê³„ì‚° í•˜ì—¬ ë””ë ‰í† ë¦¬ ì•¤íŠ¸ë¦¬ ê°’ì„ ì„¤ì •í•œ í›„
+; í•´ë‹¹ íŽ˜ì´ì§€ í…Œì´ë¸”ì„ ì´ˆê¸°í™” í•œë‹¤
 ;
-; ÀÌ ÇÔ¼ö´Â Ä¿³Î±ÇÇÑÀÇ ¸Þ¸ð¸®¸¦ È®º¸ÇÕ´Ï´Ù.
-; ¿äÃ»ÇÑ ÁÖ¼Ò·Î ºÎÅÍ ÁöÁ¤µÈ Å©±âÀÇ Ä¿³Î ¸Þ¸ð¸®¸¦ ÇÒ´ç ¹Þ½À´Ï´Ù.
+; ì´ í•¨ìˆ˜ëŠ” ì»¤ë„ê¶Œí•œì˜ ë©”ëª¨ë¦¬ë¥¼ í™•ë³´í•©ë‹ˆë‹¤.
+; ìš”ì²­í•œ ì£¼ì†Œë¡œ ë¶€í„° ì§€ì •ëœ í¬ê¸°ì˜ ì»¤ë„ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ ë°›ìŠµë‹ˆë‹¤.
 ;
-; ÇÔ¼ö ÇüÅÂ:
-; AÀÇ ³í¸® ÁÖ¼ÒºÎÅÍ B¸¸Å­ÀÇ °ø°£À» ½ÇÁ¦ ¹°¸®¸Þ¸ð¸®ÀÇ C¿¡ ¸ÅÇÎÇÕ´Ï´Ù.
+; í•¨ìˆ˜ í˜•íƒœ:
+; Aì˜ ë…¼ë¦¬ ì£¼ì†Œë¶€í„° Bë§Œí¼ì˜ ê³µê°„ì„ ì‹¤ì œ ë¬¼ë¦¬ë©”ëª¨ë¦¬ì˜ Cì— ë§¤í•‘í•©ë‹ˆë‹¤.
 ; void _kernel_alloc(void* A, void* C, size_t B);
 ;
-; ÁÖÀÇ:
-; ÀÌ ÇÔ¼ö´Â ¸Þ¸ð¸®ÀÇ »ç¿ë¿©ºÎ¿Í °ü°è¾øÀÌ ÁöÁ¤µÈ °ª¸¸Å­ÀÇ ¸Þ¸ð¸®¸¦ ¹«Á¶°Ç ¸ÅÇÎ½ÃÅµ´Ï´Ù.
+; ì£¼ì˜:
+; ì´ í•¨ìˆ˜ëŠ” ë©”ëª¨ë¦¬ì˜ ì‚¬ìš©ì—¬ë¶€ì™€ ê´€ê³„ì—†ì´ ì§€ì •ëœ ê°’ë§Œí¼ì˜ ë©”ëª¨ë¦¬ë¥¼ ë¬´ì¡°ê±´ ë§¤í•‘ì‹œí‚µë‹ˆë‹¤.
 ;
-; push Ä¿³Î ÆäÀÌÁö¸¦ ÇÒ´çÇÒ ³í¸® ¸Þ¸ð¸® ½ÃÀÛ ÁÖ¼Ò
-; push ¸ÅÇÎÇÒ ½ÇÁ¦ ¹°¸® ¸Þ¸ð¸® ½ÃÀÛ ÁÖ¼Ò
-; push ÇÒ´çÇÒ ¸Þ¸ð¸®ÀÇ Å©±â(4KBÀÇ ¹è¼ö´ÜÀ§·Î »ý¼º)
+; push ì»¤ë„ íŽ˜ì´ì§€ë¥¼ í• ë‹¹í•  ë…¼ë¦¬ ë©”ëª¨ë¦¬ ì‹œìž‘ ì£¼ì†Œ
+; push ë§¤í•‘í•  ì‹¤ì œ ë¬¼ë¦¬ ë©”ëª¨ë¦¬ ì‹œìž‘ ì£¼ì†Œ
+; push í• ë‹¹í•  ë©”ëª¨ë¦¬ì˜ í¬ê¸°(4KBì˜ ë°°ìˆ˜ë‹¨ìœ„ë¡œ ìƒì„±)
 _kernel_alloc:
-	push ebp
-	mov ebp, esp
-	pusha
+    push ebp
+    mov ebp, esp
+    pusha
 
-	mov ax, DataDescriptor
-	mov es, ax
-	;----------------------------------------------
+    mov ax, DataDescriptor
+    mov es, ax
+    ;----------------------------------------------
 
-	mov eax, dword [ebp+16]
-	shr eax, 22
-	mov ebx, eax
-	; ÆäÀÌÁö µð·ºÅä¸® ¿£Æ®¸® 10bit ±¸ÇÏ±â
-	shl eax, 2
-	; eax = eax * 4;
+    mov eax, dword [ebp+16]
+    shr eax, 22
+    mov ebx, eax
+    ; íŽ˜ì´ì§€ ë””ë ‰í† ë¦¬ ì—”íŠ¸ë¦¬ 10bit êµ¬í•˜ê¸°
+    shl eax, 2
+    ; eax = eax * 4;
 
-	mov esi, dword [PageDirectory]
-	add esi, eax
-	; PageDirectory Entry Ã£±â
-	;----------------------------------------------
+    mov esi, dword [PageDirectory]
+    add esi, eax
+    ; PageDirectory Entry ì°¾ê¸°
+    ;----------------------------------------------
 
-	mov eax, ebx
-	mov edx, 0x1000
-	mul edx
-	; Page Table »ý¼º À§Ä¡
-	; ÆäÀÌÁö ¿É¼Ç ¼³Á¤
-	add eax, dword [PageDirectory]
-	add eax, 0x1000
-	mov edi, eax
-	or eax, 0x01
-	mov dword [esi], eax
-	; Page Table À§Ä¡ ¼ÂÆÃ
-	;----------------------------------------------
+    mov eax, ebx
+    mov edx, 0x1000
+    mul edx
+    ; Page Table ìƒì„± ìœ„ì¹˜
+    ; íŽ˜ì´ì§€ ì˜µì…˜ ì„¤ì •
+    add eax, dword [PageDirectory]
+    add eax, 0x1000
+    mov edi, eax
+    or eax, 0x01
+    mov dword [esi], eax
+    ; Page Table ìœ„ì¹˜ ì…‹íŒ…
+    ;----------------------------------------------
 
-	mov esi, dword [ebp+16]
-	shl esi, 10
-	shr esi, 22
-	; ÆäÀÌÁö Å×ÀÌºí ¾ØÆ®¸® ±¸ÇÏ±â
-	shl esi, 2
-	; esi = esi * 4;
-	add esi, edi
-	mov edi, dword [ebp+12]
-	or edi, 0x01
-	mov ecx, dword [ebp+8]
+    mov esi, dword [ebp+16]
+    shl esi, 10
+    shr esi, 22
+    ; íŽ˜ì´ì§€ í…Œì´ë¸” ì•¤íŠ¸ë¦¬ êµ¬í•˜ê¸°
+    shl esi, 2
+    ; esi = esi * 4;
+    add esi, edi
+    mov edi, dword [ebp+12]
+    or edi, 0x01
+    mov ecx, dword [ebp+8]
 .page_alloc_loop:
-	mov dword [esi], edi
+    mov dword [esi], edi
 
-	add edi, 0x1000
-	add esi, 4
-	loop .page_alloc_loop
-	; ÁöÁ¤µÈ Å©±â¸¸Å­¸¸ ¹°¸®¸Þ¸ð¸®¿¡ ´ëÀÀ½ÃÅ°±â
+    add edi, 0x1000
+    add esi, 4
+    loop .page_alloc_loop
+    ; ì§€ì •ëœ í¬ê¸°ë§Œí¼ë§Œ ë¬¼ë¦¬ë©”ëª¨ë¦¬ì— ëŒ€ì‘ì‹œí‚¤ê¸°
 
-	popa
-	mov esp, ebp
-	pop ebp
-	ret 12
+    popa
+    mov esp, ebp
+    pop ebp
+    ret 12
 
-; ÆäÀÌÂ¡ ÃÊ±âÈ­ ÇÔ¼ö
+; íŽ˜ì´ì§• ì´ˆê¸°í™” í•¨ìˆ˜
 _kernel_init_paging:
-	mov ax, DataDescriptor
-	mov es, ax
+    mov ax, DataDescriptor
+    mov es, ax
 
-	call _kernel_init_pdpt
-	; ÆäÀÌÂ¡ ÀÚ·á±¸Á¶ ¿µ¿ª ÃÊ±âÈ­
+    call _kernel_init_pdpt
+    ; íŽ˜ì´ì§• ìžë£Œêµ¬ì¡° ì˜ì—­ ì´ˆê¸°í™”
 
-	;-----------------------------------------------------------
-	; Ä¿³Î ¿µ¿ª ÇÒ´ç 0x00000000 ~ 0x00100000
-	;-----------------------------------------------------------
-	push 0x00000000
-	push 0x00000000
-	push (0x00100000-0x00000000)/0x1000
-	call _kernel_alloc
+    ;-----------------------------------------------------------
+    ; ì»¤ë„ ì˜ì—­ í• ë‹¹ 0x00000000 ~ 0x00100000
+    ;-----------------------------------------------------------
+    push 0x00000000
+    push 0x00000000
+    push (0x00100000-0x00000000)/0x1000
+    call _kernel_alloc
 
-	;-----------------------------------------------------------
-	; Ä¿³Î ¿µ¿ª ÇÒ´ç 0x00400000 ~ 0x00800000
-	;-----------------------------------------------------------
-	push 0x00400000
-	push 0x00400000
-	push (0x00800000-0x00400000)/0x1000
-	call _kernel_alloc
+    ;-----------------------------------------------------------
+    ; ì»¤ë„ ì˜ì—­ í• ë‹¹ 0x00400000 ~ 0x00800000
+    ;-----------------------------------------------------------
+    push 0x00400000
+    push 0x00400000
+    push (0x00800000-0x00400000)/0x1000
+    call _kernel_alloc
 
-	;-----------------------------------------------------------
-	; Ä¿³Î ¿µ¿ª ÇÒ´ç 0x00800000 ~ 0x00805000
-	;-----------------------------------------------------------
-	push 0x00800000
-	push 0x00800000
-	push (0x00805000-0x00800000)/0x1000
-	call _kernel_alloc
+    ;-----------------------------------------------------------
+    ; ì»¤ë„ ì˜ì—­ í• ë‹¹ 0x00800000 ~ 0x00805000
+    ;-----------------------------------------------------------
+    push 0x00800000
+    push 0x00800000
+    push (0x00805000-0x00800000)/0x1000
+    call _kernel_alloc
 
-	mov eax, dword [PageDirectory]
-	mov cr3, eax
-	; ÆäÀÌÁö µð·ºÅä¸® ½ÃÀÛ ÁÖ¼Ò¸¦ µî·Ï
+    mov eax, dword [PageDirectory]
+    mov cr3, eax
+    ; íŽ˜ì´ì§€ ë””ë ‰í† ë¦¬ ì‹œìž‘ ì£¼ì†Œë¥¼ ë“±ë¡
 
-	;-------------------------------------------
-	; ÄÁÆ®·Ñ Register Setting
-	; PG, CD, NW, AM, WP, NE, ET, TS, EM, MP, PE
-	;  1   ?   ?   ?   1   ?   ?   ?   ?   ?   0
-	;-------------------------------------------
-	mov eax, cr0
-	or eax, 0x80000000
-	mov cr0, eax
-	; ÆäÀÌÂ¡À» ½ÃÀÛÇÏ±â À§ÇØ ÄÁÆ®·Ñ ·¹Áö½ºÅÍ¿¡¼­
-	; ÃÖ»óÀ§ ºñÆ®¸¦ 1·Î ¼ÂÆÃ
+    ;-------------------------------------------
+    ; ì»¨íŠ¸ë¡¤ Register Setting
+    ; PG, CD, NW, AM, WP, NE, ET, TS, EM, MP, PE
+    ;  1   ?   ?   ?   1   ?   ?   ?   ?   ?   0
+    ;-------------------------------------------
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
+    ; íŽ˜ì´ì§•ì„ ì‹œìž‘í•˜ê¸° ìœ„í•´ ì»¨íŠ¸ë¡¤ ë ˆì§€ìŠ¤í„°ì—ì„œ
+    ; ìµœìƒìœ„ ë¹„íŠ¸ë¥¼ 1ë¡œ ì…‹íŒ…
 
-	ret
+    ret
 
-; ¿î¿µÃ¼Á¦°¡ ½ÇÇàµÇ´Âµ¥ ÇÊ¿äÇÑ ÃÖ¼Ò 64MBÀÇ ¸Þ¸ð¸®°¡ ¿©À¯°ø°£À¸·Î
-; Á¸ÀçÇÏ´ÂÁö¸¦ ÇÔ²² °Ë»çÇÑ´Ù.
-; ÀÛµ¿ÀÌ ºÒ°¡´É ÇÑ °æ¿ì ax °ª¿¡ 0 °ªÀ» ¹ÝÈ¯ ½ÃÅ°°í
-; ÀÛµ¿ÀÌ °¡´ÉÇÑ °æ¿ì ax °ª¿¡ 1 °ªÀ» ¹ÝÈ¯ ½ÃÅ²´Ù.
+; ìš´ì˜ì²´ì œê°€ ì‹¤í–‰ë˜ëŠ”ë° í•„ìš”í•œ ìµœì†Œ 64MBì˜ ë©”ëª¨ë¦¬ê°€ ì—¬ìœ ê³µê°„ìœ¼ë¡œ
+; ì¡´ìž¬í•˜ëŠ”ì§€ë¥¼ í•¨ê»˜ ê²€ì‚¬í•œë‹¤.
+; ìž‘ë™ì´ ë¶ˆê°€ëŠ¥ í•œ ê²½ìš° ax ê°’ì— 0 ê°’ì„ ë°˜í™˜ ì‹œí‚¤ê³ 
+; ìž‘ë™ì´ ê°€ëŠ¥í•œ ê²½ìš° ax ê°’ì— 1 ê°’ì„ ë°˜í™˜ ì‹œí‚¨ë‹¤.
 _kernel_is_enough_memory:
-	; 0 ~ 64MB
-	; 0 ~ 0x04000000 ±îÁö
-	mov ax, DataDescriptor
-	mov ds, ax
+    ; 0 ~ 64MB
+    ; 0 ~ 0x04000000 ê¹Œì§€
+    mov ax, DataDescriptor
+    mov ds, ax
 
-	; ¸ðµç ¹üÀ§ÀÇ ÁÖ¼Ò°ø°£¿¡ Á¢±ÙÀ» °¡´ÉÇÏµµ·Ï ÇÏ±â À§ÇÑ
-	; µ¥ÀÌÅÍ µð½ºÅ©¸³Æ® ¼³Á¤
+    ; ëª¨ë“  ë²”ìœ„ì˜ ì£¼ì†Œê³µê°„ì— ì ‘ê·¼ì„ ê°€ëŠ¥í•˜ë„ë¡ í•˜ê¸° ìœ„í•œ
+    ; ë°ì´í„° ë””ìŠ¤í¬ë¦½íŠ¸ ì„¤ì •
 
-	; ¸¸¾à 1MB ÀÌ»óÀÇ ¸Þ¸ð¸®¿¡ Á¢±ÙÀÌ ºÒ°¡´É ÇÑ »óÈ²ÀÌ¶ó¸é
-	; 1MB ÀÌ»óÀÇ ÁÖ¼Ò¿¡ °ªÀ» ´ëÀÔÈÄ ´Ù½Ã ÀÐ¾î ºñ±³ÇÏ°Ô µÇ¸é
-	; ´Ù¸¥ °ªÀÌ ³ª¿À°Ô µÈ´Ù.
-	;
-	; ÀÌ´Â 1MB ÀÌ»óÀÇ ¿µ¿ª Á¢±Ù ½ÇÆÐ½Ã 0x00000000 ÁÖ¼Ò¸¦ ÂüÁ¶ÇÏ±â ¶§¹®ÀÌ´Ù.
-	mov ecx, 63
-	; 1 ~ 64MB ¿µ¿ª¿¡ Á¢±ÙÀÌ °¡´ÉÇÑÁö Ã¼Å©ÇÑ´Ù.
-	mov edi, 0x00100000
-	; ½ÃÀÛ ºÎºÐÀ» 1MB ¿µ¿ªÀ¸·Î Àâ´Â´Ù
-	mov ax, 1
-	; ÀÏ´Ü ¸®ÅÏ°ªÀ» ¼º°ø°ªÀ¸·Î ¼ÂÆÃ
+    ; ë§Œì•½ 1MB ì´ìƒì˜ ë©”ëª¨ë¦¬ì— ì ‘ê·¼ì´ ë¶ˆê°€ëŠ¥ í•œ ìƒí™©ì´ë¼ë©´
+    ; 1MB ì´ìƒì˜ ì£¼ì†Œì— ê°’ì„ ëŒ€ìž…í›„ ë‹¤ì‹œ ì½ì–´ ë¹„êµí•˜ê²Œ ë˜ë©´
+    ; ë‹¤ë¥¸ ê°’ì´ ë‚˜ì˜¤ê²Œ ëœë‹¤.
+    ;
+    ; ì´ëŠ” 1MB ì´ìƒì˜ ì˜ì—­ ì ‘ê·¼ ì‹¤íŒ¨ì‹œ 0x00000000 ì£¼ì†Œë¥¼ ì°¸ì¡°í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+    mov ecx, 63
+    ; 1 ~ 64MB ì˜ì—­ì— ì ‘ê·¼ì´ ê°€ëŠ¥í•œì§€ ì²´í¬í•œë‹¤.
+    mov edi, 0x00100000
+    ; ì‹œìž‘ ë¶€ë¶„ì„ 1MB ì˜ì—­ìœ¼ë¡œ ìž¡ëŠ”ë‹¤
+    mov ax, 1
+    ; ì¼ë‹¨ ë¦¬í„´ê°’ì„ ì„±ê³µê°’ìœ¼ë¡œ ì…‹íŒ…
 .mem_check_while:
-	mov dword [ds:edi], 0x12345678
-	cmp dword [ds:edi], 0x12345678
-	jne .error
-	; ¿À·ù ¹ß»ý
+    mov dword [ds:edi], 0x12345678
+    cmp dword [ds:edi], 0x12345678
+    jne .error
+    ; ì˜¤ë¥˜ ë°œìƒ
 
-	add edi, 0x00100000
-	; ¿À·ù ¹ß»ýÇÏÁö ¾ÊÀº °æ¿ì ´ÙÀ½ 1MB ¿µ¿ªÀ» °Ë»ç
-	loop .mem_check_while
-	jmp .end
-	; ¿À·ù ¹ß»ý ¾ÈÇÔ
+    add edi, 0x00100000
+    ; ì˜¤ë¥˜ ë°œìƒí•˜ì§€ ì•Šì€ ê²½ìš° ë‹¤ìŒ 1MB ì˜ì—­ì„ ê²€ì‚¬
+    loop .mem_check_while
+    jmp .end
+    ; ì˜¤ë¥˜ ë°œìƒ ì•ˆí•¨
 .error:
-	mov ax, 0
-	; ÀÌ ºÎºÐÀÌ ½ÇÇàµÈ °æ¿ì ÃÖ¼Ò 64MiBÀÇ ¹°¸® ¸Þ¸ð¸®°¡ Á¸ÀçÇÏÁö ¾Ê´Â °Í ÀÌ¹Ç·Î
-	; 0°ªÀ» ¸®ÅÏÇÑ´Ù.
+    mov ax, 0
+    ; ì´ ë¶€ë¶„ì´ ì‹¤í–‰ëœ ê²½ìš° ìµœì†Œ 64MiBì˜ ë¬¼ë¦¬ ë©”ëª¨ë¦¬ê°€ ì¡´ìž¬í•˜ì§€ ì•ŠëŠ” ê²ƒ ì´ë¯€ë¡œ
+    ; 0ê°’ì„ ë¦¬í„´í•œë‹¤.
 .end:
-	ret
+    ret
 
-PageDirectory:			dd 0x00402000
-; ÆäÀÌÁö µð·ºÅä¸®
+PageDirectory:          dd 0x00402000
+; íŽ˜ì´ì§€ ë””ë ‰í† ë¦¬

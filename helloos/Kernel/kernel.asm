@@ -1,268 +1,271 @@
-[bits	16]
-[org	0x8000]
+[bits   16]
+[org    0x8000]
 
 jmp _entry
 nop
-; nop ¸í·É¾î¸¦ ÅëÇØ ¿Ã¹Ù¸¥ Ä¿³ÎÀÎÁö ¾Æ´ÑÁö¸¦ Ã¼Å©ÇÏ¹Ç·Î
-; Ä¿³Î µ¥ÀÌÅÍÀÇ 3byte ºÎºĞÀÇ °ªÀº ¹«Á¶°Ç nop ¸í·É¾î ÄÚµå°¡
-; À§Ä¡ÇØ¾ß ÇÑ´Ù.
+; nop ëª…ë ¹ì–´ë¥¼ í†µí•´ ì˜¬ë°”ë¥¸ ì»¤ë„ì¸ì§€ ì•„ë‹Œì§€ë¥¼ ì²´í¬í•˜ë¯€ë¡œ
+; ì»¤ë„ ë°ì´í„°ì˜ 3byte ë¶€ë¶„ì˜ ê°’ì€ ë¬´ì¡°ê±´ nop ëª…ë ¹ì–´ ì½”ë“œê°€
+; ìœ„ì¹˜í•´ì•¼ í•œë‹¤.
 
 _entry:
-	jmp _start
-	; ÀÌ ºÎºĞ¿¡ °¢Á¾ ¶óÀÌºê·¯¸® ÇÔ¼ö ÆÄÀÏµéÀÌ include µÈ´Ù.
+    jmp _start
+    ; ì´ ë¶€ë¶„ì— ê°ì¢… ë¼ì´ë¸ŒëŸ¬ë¦¬ í•¨ìˆ˜ íŒŒì¼ë“¤ì´ include ëœë‹¤.
 
-	%include "../Bootloader/loader.print.asm"
-	%include "../Bootloader/loader.debug.dump.asm"
-	; ±âº» ¶óÀÌºê·¯¸®ÀÇ °æ¿ì ºÎÆ®·Î´õÂÊÀÇ ÇÔ¼ö¸¦ ±×´ë·Î °¡Á®¿Í »ç¿ëÇÑ´Ù.
-	; Ä¿³Î ¶óÀÌºê·¯¸®
+    %include "../Bootloader/loader.print.asm"
+    %include "../Bootloader/loader.debug.dump.asm"
+    ; ê¸°ë³¸ ë¼ì´ë¸ŒëŸ¬ë¦¬ì˜ ê²½ìš° ë¶€íŠ¸ë¡œë”ìª½ì˜ í•¨ìˆ˜ë¥¼ ê·¸ëŒ€ë¡œ ê°€ì ¸ì™€ ì‚¬ìš©í•œë‹¤.
+    ; ì»¤ë„ ë¼ì´ë¸ŒëŸ¬ë¦¬
 _start:
-	; Kernel Entry Point
+    ; Kernel Entry Point
 
-	;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	; ½ÇÁ¦ ¸Ó½Å»ó¿¡¼­ ¼¼±×¸ÕÆ® ÃÊ±âÈ­ ÀÛ¾÷À» ¼öÇàÇÏÁö ¾ÊÀ» °æ¿ì
-	; int 0x0D #13 General protection fault ¿À·ù¸¦ ¹ß»ı ½ÃÅ²´Ù.
-	; ÀÌ´Â GDT Á¤º¸°¡ ·ÎµåµÇ¸é¼­ ¼¼±×¸ÕÆ®µéÀÌ ±âÁ¸ÀÇ gs, fs µîÀÇ ¼¼±×¸ÕÆ®¸¦ ÂüÁ¶ÇÏ¸é¼­
-	; µî·ÏµÇÁö ¾ÊÀº GDT Á¤º¸¸¦ ÂüÁ¶ÇÏ±â¿¡ ¹ß»ıµÇ´Â ¿¹¿ÜµéÀÌ´Ù.
-	;
-	; ÀÌ °æ¿ì ÃÊ±âÈ­ ÀÛ¾÷À» ¼öÇà½ÃÄÑ ÁÖ¸é µÈ´Ù.
-	; Âü°í : http://www.joinc.co.kr/modules/moniwiki/wiki.php/%BA%B8%C8%A3%B8%F0%B5%E5
-	;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	xor eax, eax
-	mov es, eax
-	mov ds, eax
-	mov fs, eax
-	mov gs, eax
-	; segment init
+    ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ; ì‹¤ì œ ë¨¸ì‹ ìƒì—ì„œ ì„¸ê·¸ë¨¼íŠ¸ ì´ˆê¸°í™” ì‘ì—…ì„ ìˆ˜í–‰í•˜ì§€ ì•Šì„ ê²½ìš°
+    ; int 0x0D #13 General protection fault ì˜¤ë¥˜ë¥¼ ë°œìƒ ì‹œí‚¨ë‹¤.
+    ; ì´ëŠ” GDT ì •ë³´ê°€ ë¡œë“œë˜ë©´ì„œ ì„¸ê·¸ë¨¼íŠ¸ë“¤ì´ ê¸°ì¡´ì˜ gs, fs ë“±ì˜ ì„¸ê·¸ë¨¼íŠ¸ë¥¼ ì°¸ì¡°í•˜ë©´ì„œ
+    ; ë“±ë¡ë˜ì§€ ì•Šì€ GDT ì •ë³´ë¥¼ ì°¸ì¡°í•˜ê¸°ì— ë°œìƒë˜ëŠ” ì˜ˆì™¸ë“¤ì´ë‹¤.
+    ;
+    ; ì´ ê²½ìš° ì´ˆê¸°í™” ì‘ì—…ì„ ìˆ˜í–‰ì‹œì¼œ ì£¼ë©´ ëœë‹¤.
+    ; ì°¸ê³  : http://www.joinc.co.kr/modules/moniwiki/wiki.php/%BA%B8%C8%A3%B8%F0%B5%E5
+    ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    xor eax, eax
+    mov es, eax
+    mov ds, eax
+    mov fs, eax
+    mov gs, eax
+    ; segment init
 
-	cli
-	; ÀÌ ºÎºĞ¿¡¼­ 32bit Protected Mode ·Î ÀüÈ¯ÇÒ ÁØºñ¸¦ ÇÑ´Ù.
+    ; ê·¸ë˜í”½ ëª¨ë“œ ì „í™˜ ë¶€ë¶„
+    ;int 0x10
 
-	lgdt [gdtr]
-	; GDT Á¤º¸ ·Îµå
+    cli
+    ; ì´ ë¶€ë¶„ì—ì„œ 32bit Protected Mode ë¡œ ì „í™˜í•  ì¤€ë¹„ë¥¼ í•œë‹¤.
 
-	;-------------------------------------------
-	; ÄÁÆ®·Ñ Register Setting
-	; PG, CD, NW, AM, WP, NE, ET, TS, EM, MP, PE
-	;  0   1   0   0   0   1   1   1   0   1   1
-	;-------------------------------------------
-	mov eax, cr0
-	or eax, 0x00000001
-	mov cr0, eax
-	; º¸È£¸ğµå·Î ÀüÈ¯
+    lgdt [gdtr]
+    ; GDT ì •ë³´ ë¡œë“œ
 
-	jmp $+2
-	nop
-	nop
-	; È¤½Ã ³²¾Æ ÀÖÀ»Áö ¸ğ¸¦ 16bit ¸í·É¾îµéÀ» Á¦°Å
+    ;-------------------------------------------
+    ; ì»¨íŠ¸ë¡¤ Register Setting
+    ; PG, CD, NW, AM, WP, NE, ET, TS, EM, MP, PE
+    ;  0   1   0   0   0   1   1   1   0   1   1
+    ;-------------------------------------------
+    mov eax, cr0
+    or eax, 0x00000001
+    mov cr0, eax
+    ; ë³´í˜¸ëª¨ë“œë¡œ ì „í™˜
 
-	jmp dword CodeDescriptor:_protect_entry
+    jmp $+2
+    nop
+    nop
+    ; í˜¹ì‹œ ë‚¨ì•„ ìˆì„ì§€ ëª¨ë¥¼ 16bit ëª…ë ¹ì–´ë“¤ì„ ì œê±°
+
+    jmp dword CodeDescriptor:_protect_entry
 
 .end_loader:
-	hlt
-	jmp .end_loader
+    hlt
+    jmp .end_loader
 
 ;----------------------------------------------
-; º¸È£¸ğµå ÁøÀÔ
+; ë³´í˜¸ëª¨ë“œ ì§„ì…
 ;----------------------------------------------
-[bits	32]
-[org	0x8000]
+[bits   32]
+[org    0x8000]
 
 _library:
-	%include "kernel.print.asm"
-	%include "kernel.debug.dump.asm"
-	; È­¸é Ãâ·Â ÇÔ¼ö
-	%include "kernel.gdt.asm"
-	; gdt table Á¤ÀÇ
-	;%include "kernel.file.asm"
-	; ÆÄÀÏ°æ·Î¸¦ ÀÎÀÚ·Î ÇÏ¿© ÇØ´ç ÆÄÀÏÀÇ ³»¿ëÀ» ¸®ÅÏÇÏ´Â ÇÔ¼ö
-	; ºñµğ¿À Ä«µå Ç¥ÁØ¿¡ °üÇÑ VESA Ã³¸®¿¡ ´ëÇÑ ¶óÀÌºê·¯¸®
-	%include "kernel.a20.mode.asm"
-	; 32bit ¿¡¼­ 64KB ±îÁöÀÇ ¸Ş¸ğ¸®¸¸ Á¢±Ù °¡´ÉÇÑ Á¦ÇÑÀ» Ç®±â À§ÇÑ
-	; A20 ±â´É È°¼ºÈ­ ¶óÀÌºê·¯¸®
-	%include "kernel.mmu.asm"
-	; ¸Ş¸ğ¸® °ü·Ã ÇÔ¼ö(ÆäÀÌÂ¡ Ã³¸®)
-	%include "kernel.interrupt.asm"
-	; ÀÎÅÍ·´Æ® °ü·Ã Ã³¸® ÇÔ¼ö
-	%include "kernel.pic.asm"
-	; pic °ü·Ã ÇÔ¼ö ¶óÀÌºê·¯¸®
+    %include "kernel.print.asm"
+    %include "kernel.debug.dump.asm"
+    ; í™”ë©´ ì¶œë ¥ í•¨ìˆ˜
+    %include "kernel.gdt.asm"
+    ; gdt table ì •ì˜
+    ;%include "kernel.file.asm"
+    ; íŒŒì¼ê²½ë¡œë¥¼ ì¸ìë¡œ í•˜ì—¬ í•´ë‹¹ íŒŒì¼ì˜ ë‚´ìš©ì„ ë¦¬í„´í•˜ëŠ” í•¨ìˆ˜
+    ; ë¹„ë””ì˜¤ ì¹´ë“œ í‘œì¤€ì— ê´€í•œ VESA ì²˜ë¦¬ì— ëŒ€í•œ ë¼ì´ë¸ŒëŸ¬ë¦¬
+    %include "kernel.a20.mode.asm"
+    ; 32bit ì—ì„œ 64KB ê¹Œì§€ì˜ ë©”ëª¨ë¦¬ë§Œ ì ‘ê·¼ ê°€ëŠ¥í•œ ì œí•œì„ í’€ê¸° ìœ„í•œ
+    ; A20 ê¸°ëŠ¥ í™œì„±í™” ë¼ì´ë¸ŒëŸ¬ë¦¬
+    %include "kernel.mmu.asm"
+    ; ë©”ëª¨ë¦¬ ê´€ë ¨ í•¨ìˆ˜(í˜ì´ì§• ì²˜ë¦¬)
+    %include "kernel.interrupt.asm"
+    ; ì¸í„°ëŸ½íŠ¸ ê´€ë ¨ ì²˜ë¦¬ í•¨ìˆ˜
+    %include "kernel.pic.asm"
+    ; pic ê´€ë ¨ í•¨ìˆ˜ ë¼ì´ë¸ŒëŸ¬ë¦¬
 
 _global_variables:
-	;------------------------------------------------------------------------------------
-	; º¯¼ö Ã³¸®
-	InfoTrueMessage:			db ' O K ', 0
-	InfoFalseMessage:			db 'FALSE', 0
-	; TRUE/ FALSE
-	KernelProtectModeMessage:	db 'Switching Kernel Protected Mode -- [     ]', 0x0A, 0
-	; Ä¿³Î º¸È£¸ğµå ÁøÀÔ ¿Ï·á ¸Ş½ÃÁö
-	A20SwitchingCheckMessage:	db 'A20 Switching Check -------------- [     ]', 0x0A, 0
-	; A20 ½ºÀ§Äª ¼º°ø ¿©ºÎ¿¡ µû¸¥ ¸Ş½ÃÁö
-	EnoughMemoryCheckMessage:	db '64MiB Physical Memory Check ------ [     ]', 0x0A, 0
-	; ÃÖ¼Ò 64MiB ÀÌ»óÀÇ ¹°¸®¸Ş¸ğ¸®ÀÎ°¡¿¡ µû¸¥ ¸Ş½ÃÁö
-	Paging32ModeMessage:		db '32bit None-PAE Paging Mode ------- [     ]', 0x0A, 0
-	; 32bit ÆäÀÌÂ¡ Ã³¸® ¿Ï·á ¸Ş½ÃÁö
-	;------------------------------------------------------------------------------------
+    ;------------------------------------------------------------------------------------
+    ; ë³€ìˆ˜ ì²˜ë¦¬
+    InfoTrueMessage:            db ' O K ', 0
+    InfoFalseMessage:           db 'FALSE', 0
+    ; TRUE/ FALSE
+    KernelProtectModeMessage:   db 'Switching Kernel Protected Mode -- [     ]', 0x0A, 0
+    ; ì»¤ë„ ë³´í˜¸ëª¨ë“œ ì§„ì… ì™„ë£Œ ë©”ì‹œì§€
+    A20SwitchingCheckMessage:   db 'A20 Switching Check -------------- [     ]', 0x0A, 0
+    ; A20 ìŠ¤ìœ„ì¹­ ì„±ê³µ ì—¬ë¶€ì— ë”°ë¥¸ ë©”ì‹œì§€
+    EnoughMemoryCheckMessage:   db '64MiB Physical Memory Check ------ [     ]', 0x0A, 0
+    ; ìµœì†Œ 64MiB ì´ìƒì˜ ë¬¼ë¦¬ë©”ëª¨ë¦¬ì¸ê°€ì— ë”°ë¥¸ ë©”ì‹œì§€
+    Paging32ModeMessage:        db '32bit None-PAE Paging Mode ------- [     ]', 0x0A, 0
+    ; 32bit í˜ì´ì§• ì²˜ë¦¬ ì™„ë£Œ ë©”ì‹œì§€
+    ;------------------------------------------------------------------------------------
 
 _protect_entry:
-	; 32bit Protected Mode ½ÃÀÛ ¿£Æ®¸® Æ÷ÀÎÆ® ÁöÁ¡
-	push 0x07
-	push KernelProtectModeMessage
-	call _print32
-	; º¸È£¸ğµå ÀüÈ¯ ¸Ş½ÃÁö
+    ; 32bit Protected Mode ì‹œì‘ ì—”íŠ¸ë¦¬ í¬ì¸íŠ¸ ì§€ì 
+    push 0x07
+    push KernelProtectModeMessage
+    call _print32
+    ; ë³´í˜¸ëª¨ë“œ ì „í™˜ ë©”ì‹œì§€
 
-	mov esi, 0
-	mov edi, .chk_pm_true
-	jmp .info_true
+    mov esi, 0
+    mov edi, .chk_pm_true
+    jmp .info_true
 .chk_pm_true:
-	; º¸È£¸ğµå ÀüÈ¯ ¼º°ø
+    ; ë³´í˜¸ëª¨ë“œ ì „í™˜ ì„±ê³µ
 
-	;-------------------------------------------------------------
-	; A20 È°¼ºÈ­ ¹× ¸Ş¸ğ¸® Ã¼Å©
-	;-------------------------------------------------------------
-	call _set_a20_mode
-	; A20 ±â´ÉÀ» È°¼ºÈ­ ÇÑ´Ù.
+    ;-------------------------------------------------------------
+    ; A20 í™œì„±í™” ë° ë©”ëª¨ë¦¬ ì²´í¬
+    ;-------------------------------------------------------------
+    call _set_a20_mode
+    ; A20 ê¸°ëŠ¥ì„ í™œì„±í™” í•œë‹¤.
 
-	call _test_a20_mode
-	; ÀÌ ºÎºĞ¿¡¼­ A20 ±â´ÉÀÇ È°¼ºÈ­ ¿©ºÎ¸¦ Å×½ºÆ®
+    call _test_a20_mode
+    ; ì´ ë¶€ë¶„ì—ì„œ A20 ê¸°ëŠ¥ì˜ í™œì„±í™” ì—¬ë¶€ë¥¼ í…ŒìŠ¤íŠ¸
 
-	push 0x07
-	push A20SwitchingCheckMessage
-	call _print32
-	; A20 ½ºÀ§Äª Ã³¸® ¸Ş½ÃÁö
+    push 0x07
+    push A20SwitchingCheckMessage
+    call _print32
+    ; A20 ìŠ¤ìœ„ì¹­ ì²˜ë¦¬ ë©”ì‹œì§€
 
-	cmp ax, 0
-	je .info_false
-	; A20 ÀüÈ¯ ½ÇÆĞÀÎ °æ¿ì ÀÌ¹Ç·Î
-	; ½Ã½ºÅÛÀ» Á¾·á ½ÃÅ²´Ù.
+    mov esi, 1
+    cmp ax, 0
+    je .info_false
+    ; A20 ì „í™˜ ì‹¤íŒ¨ì¸ ê²½ìš° ì´ë¯€ë¡œ
+    ; ì‹œìŠ¤í…œì„ ì¢…ë£Œ ì‹œí‚¨ë‹¤.
 
-	mov esi, 1
-	mov edi, .chk_a20_true
-	jmp .info_true
+    mov edi, .chk_a20_true
+    jmp .info_true
 .chk_a20_true:
-	; A20 ±â´ÉÀÌ È°¼ºÈ­ µÇ¾îÀÖÀ½
+    ; A20 ê¸°ëŠ¥ì´ í™œì„±í™” ë˜ì–´ìˆìŒ
 
-	call _kernel_is_enough_memory
-	; OS ½ÇÇà¿¡ ÇÊ¿äÇÑ ÃÖ¼ÒÇÑÀÇ 64MB ¸Ş¸ğ¸®°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
+    call _kernel_is_enough_memory
+    ; OS ì‹¤í–‰ì— í•„ìš”í•œ ìµœì†Œí•œì˜ 64MB ë©”ëª¨ë¦¬ê°€ ì¡´ì¬í•˜ëŠ”ì§€ ì²´í¬
 
-	push 0x07
-	push EnoughMemoryCheckMessage
-	call _print32
+    push 0x07
+    push EnoughMemoryCheckMessage
+    call _print32
 
-	cmp ax, 0
-	je .info_false
-	; ¸Ş¸ğ¸® ºÎÁ·À¸·Î ÀÎÇÑ ½ÇÆĞÀÎ °æ¿ì ÀÌ¹Ç·Î
-	; ½Ã½ºÅÛÀ» Á¾·á ½ÃÅ²´Ù.
+    mov esi, 2
+    cmp ax, 0
+    je .info_false
+    ; ë©”ëª¨ë¦¬ ë¶€ì¡±ìœ¼ë¡œ ì¸í•œ ì‹¤íŒ¨ì¸ ê²½ìš° ì´ë¯€ë¡œ
+    ; ì‹œìŠ¤í…œì„ ì¢…ë£Œ ì‹œí‚¨ë‹¤.
 
-	mov esi, 2
-	mov edi, .chk_mem_true
-	jmp .info_true
+    mov edi, .chk_mem_true
+    jmp .info_true
 .chk_mem_true:
-	; 64MiB ÀÌ»óÀÇ ¸Ş¸ğ¸®°¡ È®º¸µÇ¾î ÀÖÀ½
+    ; 64MiB ì´ìƒì˜ ë©”ëª¨ë¦¬ê°€ í™•ë³´ë˜ì–´ ìˆìŒ
 
-	call _init_pic
-	; pic ÃÊ±âÈ­ ¼öÇà
+    call _init_pic
+    ; pic ì´ˆê¸°í™” ìˆ˜í–‰
 
-	;-------------------------------------------------------------
-	; GDT, TSS ÃÊ±âÈ­
-	;-------------------------------------------------------------
-	call _kernel_init_gdt_table
-	; GDT »õ·Î¿î ¸Ş¸ğ¸® ÁÖ¼Ò¿¡ µî·Ï
+    ;-------------------------------------------------------------
+    ; GDT, TSS ì´ˆê¸°í™”
+    ;-------------------------------------------------------------
+    call _kernel_init_gdt_table
+    ; GDT ìƒˆë¡œìš´ ë©”ëª¨ë¦¬ ì£¼ì†Œì— ë“±ë¡
 
-	call _kernel_load_gdt
-	; GDT ·Îµå
+    call _kernel_load_gdt
+    ; GDT ë¡œë“œ
 
-	;-------------------------------------------------------------
-	; ÆäÀÌÂ¡ ¹× ÀÎÅÍ·´Æ® ÃÊ±âÈ­
-	;-------------------------------------------------------------
-	call _kernel_init_idt_table
-	; ÀÎÅÍ·´Æ® Å×ÀÌºíÀ» ÃÊ±âÈ­ Ã³¸® ÇØ ÁØ´Ù.
+    ;-------------------------------------------------------------
+    ; í˜ì´ì§• ë° ì¸í„°ëŸ½íŠ¸ ì´ˆê¸°í™”
+    ;-------------------------------------------------------------
+    call _kernel_init_idt_table
+    ; ì¸í„°ëŸ½íŠ¸ í…Œì´ë¸”ì„ ì´ˆê¸°í™” ì²˜ë¦¬ í•´ ì¤€ë‹¤.
 
-	mov esi, dword [idtr]
-	call _kernel_load_idt
-	; ÀÎÅÍ·´Æ® µğ½ºÅ©¸³ÅÍ Å×ÀÌºí µî·Ï
+    mov esi, dword [idtr]
+    call _kernel_load_idt
+    ; ì¸í„°ëŸ½íŠ¸ ë””ìŠ¤í¬ë¦½í„° í…Œì´ë¸” ë“±ë¡
 
-	call _kernel_init_paging
-	; ÆäÀÌÂ¡ ÃÊ±âÈ­, È°¼ºÈ­
-	; ½ÇÇàµÈ ¼ø°£ ¸ğµç ÁÖ¼Ò´Â ³í¸®ÁÖ¼Ò·Î ÇØ¼®µÊ...
+    call _kernel_init_paging
+    ; í˜ì´ì§• ì´ˆê¸°í™”, í™œì„±í™”
+    ; ì‹¤í–‰ëœ ìˆœê°„ ëª¨ë“  ì£¼ì†ŒëŠ” ë…¼ë¦¬ì£¼ì†Œë¡œ í•´ì„ë¨...
 
-	push 0x07
-	push Paging32ModeMessage
-	call _print32
-	; ÆäÀÌÂ¡ °ü·Ã ¸Ş½ÃÁö
+    push 0x07
+    push Paging32ModeMessage
+    call _print32
+    ; í˜ì´ì§• ê´€ë ¨ ë©”ì‹œì§€
 
-	mov esi, 3
-	mov edi, .chk_paging_true
-	jmp .info_true
+    mov esi, 3
+    mov edi, .chk_paging_true
+    jmp .info_true
 .chk_paging_true:
-	; ÆäÀÌÂ¡ ±â´É È°¼ºÈ­ ¿Ï·á
+    ; í˜ì´ì§• ê¸°ëŠ¥ í™œì„±í™” ì™„ë£Œ
 
-	mov ax, 0
-	call _mask_pic
-	; ¸ğµç PIC È°¼ºÈ­
+    mov ax, 0
+    call _mask_pic
+    ; ëª¨ë“  PIC í™œì„±í™”
 
-	sti
-	; ÀÎÅÍ·´Æ® È°¼ºÈ­
+    sti
+    ; ì¸í„°ëŸ½íŠ¸ í™œì„±í™”
 
-	mov di, TSSDescriptor
-	call _kernel_load_tss
-	; TSS ¼³Á¤
+    mov di, TSSDescriptor
+    call _kernel_load_tss
+    ; TSS ì„¤ì •
 
-;	;-------------------------------------------------------------
-;	; ÀÎÅÍ·´Æ® ¹ß»ı Å×½ºÆ®
-;	; ¿©·¯°¡Áö ÀÎÅÍ·´Æ® ¿¹¿Ü¸¦ °­Á¦ÀûÀ¸·Î ¹ß»ı½ÃÅ²´Ù.
-;	;-------------------------------------------------------------
-;	; devide error!!
-;	mov eax, 10
-;	mov ecx, 0
-;	div ecx
+;   ;-------------------------------------------------------------
+;   ; ì¸í„°ëŸ½íŠ¸ ë°œìƒ í…ŒìŠ¤íŠ¸
+;   ; ì—¬ëŸ¬ê°€ì§€ ì¸í„°ëŸ½íŠ¸ ì˜ˆì™¸ë¥¼ ê°•ì œì ìœ¼ë¡œ ë°œìƒì‹œí‚¨ë‹¤.
+;   ;-------------------------------------------------------------
+;   ; devide error!!
+;   mov eax, 10
+;   mov ecx, 0
+;   div ecx
 
-;	;-----------------------------------------------------------------------
-;	; 0xF0000000ÀÇ ³í¸® ÁÖ¼Ò¸¦ 0x01000000ÀÇ ¹°¸® ¸Ş¸ğ¸® ÁÖ¼Ò·Î Mapping
-;	; Ä¿³Î ¸Ş¸ğ¸® ÇÒ´ç Å×½ºÆ®
-;	;-----------------------------------------------------------------------
-;	push 0xF0000000
-;	push 0x01000000
-;	push (0xF0001000-0xF0000000)/0x1000
-;	call _kernel_alloc
+;   ;-----------------------------------------------------------------------
+;   ; 0xF0000000ì˜ ë…¼ë¦¬ ì£¼ì†Œë¥¼ 0x01000000ì˜ ë¬¼ë¦¬ ë©”ëª¨ë¦¬ ì£¼ì†Œë¡œ Mapping
+;   ; ì»¤ë„ ë©”ëª¨ë¦¬ í• ë‹¹ í…ŒìŠ¤íŠ¸
+;   ;-----------------------------------------------------------------------
+;   push 0xF0000000
+;   push 0x01000000
+;   push (0xF0001000-0xF0000000)/0x1000
+;   call _kernel_alloc
 ;
-;	; page fault!!
-;	mov ecx, 0x12345678
-;	mov dword [0xF0000000], ecx
-	;-------------------------------------------------------------
+;   ; page fault!!
+;   mov ecx, 0x12345678
+;   mov dword [0xF0000000], ecx
+    ;-------------------------------------------------------------
 
-;	push 0xE0000000
-;	push 0x00900000
-;	push (0xE0001000-0xE0000000)/0x1000
-;	call _kernel_alloc
-;	; Ä¿³Î ¿µ¿ªÀÇ ºñµğ¿À ¸Ş¸ğ¸® ÇÒ´ç
+;   push 0xE0000000
+;   push 0x00900000
+;   push (0xE0001000-0xE0000000)/0x1000
+;   call _kernel_alloc
+;   ; ì»¤ë„ ì˜ì—­ì˜ ë¹„ë””ì˜¤ ë©”ëª¨ë¦¬ í• ë‹¹
 ;
-;	mov ecx, 0x12345678
-;	mov dword [0xE0000000], ecx
+;   mov ecx, 0x12345678
+;   mov dword [0xE0000000], ecx
 .end_kernel:
-	hlt
-	jmp .end_kernel
+    hlt
+    jmp .end_kernel
 
 .info_false:
-	push esi
-	push 36
-	call _print32_gotoxy
+    push esi
+    push 36
+    call _print32_gotoxy
 
-	push 0x04
-	push InfoFalseMessage
-	call _print32
-	jmp .end_kernel
+    push 0x04
+    push InfoFalseMessage
+    call _print32
+    jmp .end_kernel
 
 .info_true:
-	push esi
-	push 36
-	call _print32_gotoxy
+    push esi
+    push 36
+    call _print32_gotoxy
 
-	push 0x0A
-	push InfoTrueMessage
-	call _print32
+    push 0x0A
+    push InfoTrueMessage
+    call _print32
 
-	inc esi
-	push esi
-	push 0
-	call _print32_gotoxy
-	; ´ÙÀ½ÁÙ·Î Æ÷ÀÎÅÍ ÀÌµ¿
-	jmp edi
+    inc esi
+    push esi
+    push 0
+    call _print32_gotoxy
+    ; ë‹¤ìŒì¤„ë¡œ í¬ì¸í„° ì´ë™
+    jmp edi

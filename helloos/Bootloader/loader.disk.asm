@@ -1,207 +1,207 @@
 ; 드라이브 리셋
 ; dl : 드라이브 번호
 ;_disk_reset:
-;	pusha
-;	mov dl, byte [BootDiskNumber]
-;	mov ah, 0
-;	; 리셋 플래그 설정
+;   pusha
+;   mov dl, byte [BootDiskNumber]
+;   mov ah, 0
+;   ; 리셋 플래그 설정
 ;
-;	int 0x13
-;	; Disk I/O Interrupt
-;	jnc .end
-;	; 오류가 없을 경우 함수 정상 종료
+;   int 0x13
+;   ; Disk I/O Interrupt
+;   jnc .end
+;   ; 오류가 없을 경우 함수 정상 종료
 ;
-;	push 1
-;	push 0x04
-;	push DiskResetError
-;	call _print	
+;   push 1
+;   push 0x04
+;   push DiskResetError
+;   call _print 
 ;.end:
-;	popa
-;	ret
+;   popa
+;   ret
 
 ; CD는 1 sector = 2048 byte
 ; System Area = 16 sector
 ; CD Signature = CD001
 _disk_load_kernel_data_to_memory:
-	push bp
-	mov bp, sp
+    push bp
+    mov bp, sp
 
-	pusha
+    pusha
 
-	xor eax, eax
+    xor eax, eax
 
-	mov al, byte [TotalFATs]
-	; FAT 의 개수 구하기
+    mov al, byte [TotalFATs]
+    ; FAT 의 개수 구하기
 
-	;-----------------------------------------------------------------------------------
-	; Root Directory Entry 시작 Sector 계산
-	; RootDirectoryEntry Sector = 예약된섹터 수+FAT의 크기(Sector 단위) * FAT의 개수
-	;-----------------------------------------------------------------------------------
-	mov edx, dword [BigSectorsPerFAT]
-	mul edx
-	; FAT 의 크기 계산
+    ;-----------------------------------------------------------------------------------
+    ; Root Directory Entry 시작 Sector 계산
+    ; RootDirectoryEntry Sector = 예약된섹터 수+FAT의 크기(Sector 단위) * FAT의 개수
+    ;-----------------------------------------------------------------------------------
+    mov edx, dword [BigSectorsPerFAT]
+    mul edx
+    ; FAT 의 크기 계산
 
-	xor edx, edx
-	mov dx, word [ReservedSectors]
-	; FAT 의 시작 위치 계산
-	add eax, edx
-	; RootDirectory 의 시작 위치 계산
-	mov dword [DAPReadSector], eax
-	; 계산된 RootDirectoryEntry Sector 위치 셋팅
-	;-----------------------------------------------------------------------------------
+    xor edx, edx
+    mov dx, word [ReservedSectors]
+    ; FAT 의 시작 위치 계산
+    add eax, edx
+    ; RootDirectory 의 시작 위치 계산
+    mov dword [DAPReadSector], eax
+    ; 계산된 RootDirectoryEntry Sector 위치 셋팅
+    ;-----------------------------------------------------------------------------------
 
-	mov si, DAP
-	mov ah, 0x42
-	mov dl, byte [BootDiskNumber]
-	int 0x13
-	jc .end
-	; 오류 발생한 경우 함수 종료
+    mov si, DAP
+    mov ah, 0x42
+    mov dl, byte [BootDiskNumber]
+    int 0x13
+    jc .end
+    ; 오류 발생한 경우 함수 종료
 
-	;push 2
-	;push 0x04
-	;push DiskReadError
-	;call _print
-	; 오류 없이 성공적으로 섹터 읽기에 성공한 경우
+    ;push 2
+    ;push 0x04
+    ;push DiskReadError
+    ;call _print
+    ; 오류 없이 성공적으로 섹터 읽기에 성공한 경우
 .success:
-	; 읽기에 성공하게 되면 메모리에
-	; RootDirectory Sector Data 가 존재하게 된다
-	mov ax, word [DAPSegment]
-	mov ds, ax
+    ; 읽기에 성공하게 되면 메모리에
+    ; RootDirectory Sector Data 가 존재하게 된다
+    mov ax, word [DAPSegment]
+    mov ds, ax
 
-	mov di, word [DAPOffset]
+    mov di, word [DAPOffset]
 .loop_remove_check:
 ;-------------------------------------------------
 ; 파일 삭제 여부 체크 루틴
 ; info!) 이 루틴에서 삭제된 파일정보는 건너 뛴다.
 ;-------------------------------------------------
-	; 첫 바이트가 0xE5 인 경우 삭제된 영역
-	mov dl, byte [di]
-	cmp dl, 0xE5
-	jne .dir_entry_check
-	; 삭제된 파일명인지 체크
+    ; 첫 바이트가 0xE5 인 경우 삭제된 영역
+    mov dl, byte [di]
+    cmp dl, 0xE5
+    jne .dir_entry_check
+    ; 삭제된 파일명인지 체크
 
-	add di, 0x20
-	; 다음 RootDirectory 체크
-	jmp .loop_remove_check
+    add di, 0x20
+    ; 다음 RootDirectory 체크
+    jmp .loop_remove_check
 
 ;-------------------------------------------------
 .dir_entry_check:
-	; Long Directory Entry Check
-	mov cl, byte [di+11]
-	cmp cl, 0x0F
-	jne .short_dir_entry
-	;mov cl, byte [di]
-	;or cl, 0x40
-	;cmp cl, 0x0F
-	;jne .short_dir_entry
+    ; Long Directory Entry Check
+    mov cl, byte [di+11]
+    cmp cl, 0x0F
+    jne .short_dir_entry
+    ;mov cl, byte [di]
+    ;or cl, 0x40
+    ;cmp cl, 0x0F
+    ;jne .short_dir_entry
 
-	; 이 부분이 실행 된 경우 cl 만큼 루프를 돌려야 한다.
+    ; 이 부분이 실행 된 경우 cl 만큼 루프를 돌려야 한다.
 .long_dir_entry:
-	; long dir entry : filename add 10byte
-	; cl : Nth Long entry
-	;cmp cl, 0
-	;je .end
-	; 1th ~ Nth loop
-	;dec cl
+    ; long dir entry : filename add 10byte
+    ; cl : Nth Long entry
+    ;cmp cl, 0
+    ;je .end
+    ; 1th ~ Nth loop
+    ;dec cl
 
-	add di, 0x20
-	jmp .dir_entry_check
+    add di, 0x20
+    jmp .dir_entry_check
 .short_dir_entry:
-	; short dir entry : filename 8byte
-	cmp byte [di], 0
-	je .end
+    ; short dir entry : filename 8byte
+    cmp byte [di], 0
+    je .end
 
-	xor ax, ax
-	mov si, di
-	mov bx, word [bp+4]
+    xor ax, ax
+    mov si, di
+    mov bx, word [bp+4]
 
 .loop_copy:
-	cmp al, 10
-	je .loop_end
+    cmp al, 10
+    je .loop_end
 
-	mov ah, byte [es:bx]
-	cmp ah, 0
-	je .loop_end
-	; 위 조건이 만족하는 경우
-	; 비교 대상이 NULL 문자가 나온경우
-	; 일치한 문자열을 찾은경우
+    mov ah, byte [es:bx]
+    cmp ah, 0
+    je .loop_end
+    ; 위 조건이 만족하는 경우
+    ; 비교 대상이 NULL 문자가 나온경우
+    ; 일치한 문자열을 찾은경우
 
-	cmp ah, byte [si]
-	jne .loop_not_found
+    cmp ah, byte [si]
+    jne .loop_not_found
 
-	inc si
-	inc bx
-	inc al
-	jmp .loop_copy
+    inc si
+    inc bx
+    inc al
+    jmp .loop_copy
 .loop_not_found:
-	add di, 0x20
-	jmp .loop_remove_check
-	; 커널 소스 파일이 아닐 경우 다음 DirectoryEntry 비교
+    add di, 0x20
+    jmp .loop_remove_check
+    ; 커널 소스 파일이 아닐 경우 다음 DirectoryEntry 비교
 .loop_end:
-	; 인자로 받은 파일명과 동일한 파일명인지 체크
+    ; 인자로 받은 파일명과 동일한 파일명인지 체크
 
-	mov al, byte [di+11]
-	and al, 0x20
-	cmp al, 0x20
-	jne .loop_not_found
-	; 파일인지 폴더인지 체크
-	; 폴더인 경우 다음 Directory Entry 검색
+    mov al, byte [di+11]
+    and al, 0x20
+    cmp al, 0x20
+    jne .loop_not_found
+    ; 파일인지 폴더인지 체크
+    ; 폴더인 경우 다음 Directory Entry 검색
 
-	; 이 부분이 실행이 된다면 커널소스 파일과 동일한 파일을 발견한 경우 이다.
+    ; 이 부분이 실행이 된다면 커널소스 파일과 동일한 파일을 발견한 경우 이다.
 
-	mov dx, word [di+26]
-	sub dx, 2
-	; RootDirectoryEntry가 2 Cluster 이므로 2를 빼준다
+    mov dx, word [di+26]
+    sub dx, 2
+    ; RootDirectoryEntry가 2 Cluster 이므로 2를 빼준다
 
-	xor eax, eax
-	mov al, byte [SectorsPerCluster]
-	mul dx
-	; 커널 파일 로드의 경우 dword 까지는 필요 없으므로
-	; 하위 word 만 사용한다
+    xor eax, eax
+    mov al, byte [SectorsPerCluster]
+    mul dx
+    ; 커널 파일 로드의 경우 dword 까지는 필요 없으므로
+    ; 하위 word 만 사용한다
 
-	mov ebx, dword [DAPReadSector]
-	add eax, ebx
-	mov dword [DAPReadSector], eax
-	; 파일 데이터 섹터 = RootDirectoryEntry 시작 섹터 + 파일 클러스터 번호 * 8sector(1cluster)
+    mov ebx, dword [DAPReadSector]
+    add eax, ebx
+    mov dword [DAPReadSector], eax
+    ; 파일 데이터 섹터 = RootDirectoryEntry 시작 섹터 + 파일 클러스터 번호 * 8sector(1cluster)
 
-	mov word [DAPReadSectorSize], 8+4
-	; 1cluster read!!
+    mov word [DAPReadSectorSize], 8+4
+    ; 1cluster read!!
 
-	mov si, DAP
-	mov ah, 0x42
-	mov dl, byte [BootDiskNumber]
-	int 0x13
-	jnc .end
-	; 커널 데이터 메모리 로드
+    mov si, DAP
+    mov ah, 0x42
+    mov dl, byte [BootDiskNumber]
+    int 0x13
+    jnc .end
+    ; 커널 데이터 메모리 로드
 
-	;push 4
-	;push KernelAddress
-	;call _print_byte_dump
-	; 발견한 Kernel 데이터 주소 출력
+    ;push 4
+    ;push KernelAddress
+    ;call _print_byte_dump
+    ; 발견한 Kernel 데이터 주소 출력
 .error:
-	push 0
-	push 0x04
-	push KernelLoadError
-	call _print
-	; 커널 로드 실패시 오류 메시지 출력 후 함수 종료
+    push 0
+    push 0x04
+    push KernelLoadError
+    call _print
+    ; 커널 로드 실패시 오류 메시지 출력 후 함수 종료
 .end:
-	popa
+    popa
 
-	mov sp, bp
-	pop bp
-	ret 2
+    mov sp, bp
+    pop bp
+    ret 2
 
 ; LAB
 ; Disk Address Packet
 DAP:
-					db 16, 0	; Size of packet (10h or 18h)
-DAPReadSectorSize:	dw 3		; Sectors to read
-DAPOffset:			dw 0x8000	; Offset
-DAPSegment:			dw 0		; Segment
-DAPReadSector:		dq 1
+                    db 16, 0    ; Size of packet (10h or 18h)
+DAPReadSectorSize:  dw 3        ; Sectors to read
+DAPOffset:          dw 0x8000   ; Offset
+DAPSegment:         dw 0        ; Segment
+DAPReadSector:      dq 1
 
-;KernelAddress:		equ 0x8000
+;KernelAddress:     equ 0x8000
 
-;DiskResetError:	db 'DiskReset Error', 0
-;DiskReadError:		db 'DiskRead Error', 0
-KernelLoadError:	db 'Kernel Loading Failure', 0
+;DiskResetError:    db 'DiskReset Error', 0
+;DiskReadError:     db 'DiskRead Error', 0
+KernelLoadError:    db 'Kernel Loading Failure', 0
