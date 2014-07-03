@@ -6,11 +6,11 @@ CP := cp
 all: install
     
 install: loader.bin
-    @$(CP) "loader.bin" "../Image/loader.img"
+	@$(CP) "loader.bin" "../Image/loader.img"
     
 # Assembly Code Compile
 %.bin : %.asm
-    nasm -f bin -o $@ $<
+	nasm -f bin -o $@ $<
 
 clean:
-    @$(REMOVE) *.bin
+	@$(REMOVE) *.bin
