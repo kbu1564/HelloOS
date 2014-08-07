@@ -17,6 +17,10 @@ Introduce
 
 This project's meaning to me
 =====
+- Maybe it would be foolish process developing the operating system only use x86 Intel assembly language.
+- Now this project would be result for project which is made by a man who is different, especially thinking about all of things and is crazy about coding.
+- This project will be able to give a help on knowledge to other people, who develop for the operating system and system structure.
+- I hope that source that i made affectionately can be helped to other people without any restrictive licens .limitation . Therefore, I contribute this source to MIT.
 
 <hr />
 
