@@ -26,5 +26,5 @@ BootDiskNumber:     db 0x80
 Reserved4:          db 0
 Signature:          db 0x29
 VolumeID:           dd 0xFFFFFFFF
-VolumeLabel:        db "Hello OS.v1"
+VolumeLabel:        db "Hello OS.v0"
 SystemID:           db "FAT32   "

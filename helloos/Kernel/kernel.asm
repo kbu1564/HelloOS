@@ -2,6 +2,8 @@
 [org    0x8000]
 
 jmp _entry
+; 32bit로 전환되기 전에 32bit에서 필요한 중요 라이브러리를
+; 메모리로 로드시킨다.
 nop
 ; nop 명령어를 통해 올바른 커널인지 아닌지를 체크하므로
 ; 커널 데이터의 3byte 부분의 값은 무조건 nop 명령어 코드가
@@ -14,7 +16,12 @@ _entry:
     %include "../Bootloader/loader.print.asm"
     %include "../Bootloader/loader.debug.dump.asm"
     ; 기본 라이브러리의 경우 부트로더쪽의 함수를 그대로 가져와 사용한다.
-    ; 커널 라이브러리
+
+    ; Kernel Library
+    %include "kernel.vbe.asm"
+    ; Vedio BIOS Extension Library
+    %include "kernel.file.asm"
+    ; Call Functions LoadLibrary
 _start:
     ; Kernel Entry Point
 
@@ -34,8 +41,12 @@ _start:
     mov gs, eax
     ; segment init
 
+    call _load_library
     ; 그래픽 모드 전환 부분
     ;int 0x10
+
+    call _get_vbe_info
+    ; load graphics information(vbe)
 
     cli
     ; 이 부분에서 32bit Protected Mode 로 전환할 준비를 한다.
@@ -105,6 +116,8 @@ _global_variables:
     ; 32bit 페이징 처리 완료 메시지
     ;------------------------------------------------------------------------------------
 
+    VbeSupportVersionMessage:   db 'VBE Support Version -------------- [     ]', 0x0A, 0
+
 _protect_entry:
     ; 32bit Protected Mode 시작 엔트리 포인트 지점
     push 0x07
@@ -133,12 +146,12 @@ _protect_entry:
     ; A20 스위칭 처리 메시지
 
     mov esi, 1
-    cmp ax, 0
-    je .info_false
+    mov edi, .chk_a20_true
     ; A20 전환 실패인 경우 이므로
     ; 시스템을 종료 시킨다.
 
-    mov edi, .chk_a20_true
+    test ax, ax
+    jz .info_false
     jmp .info_true
 .chk_a20_true:
     ; A20 기능이 활성화 되어있음
@@ -197,6 +210,34 @@ _protect_entry:
     jmp .info_true
 .chk_paging_true:
     ; 페이징 기능 활성화 완료
+
+    push 0x07
+    push VbeSupportVersionMessage
+    call _print32
+
+    mov ax, word [0x7E00 + 0x4]
+    and ax, 0x0200
+    xor ax, 0x0200
+    mov dx, 0x004F
+    xor dx, word [VbeInfoState]
+    add ax, dx
+    ; vbe 2.0, 3.0인 경우
+    ; vbe를 지원하는지를 체크한다.
+
+    test ax, ax
+    jnz .info_false
+    ; vbe 2.0 미만 또는 상태 정보값 읽기 실패인 경우
+    ; 커널 종료
+
+    push 4
+    push 36
+    push 2
+    push 0x7E00 + 0x4
+    call _print_byte_dump32
+    ; vbe를 2.0 이상 지원하는 경우
+    ; 지원하는 vbe 버전을 출력
+    ;
+    ; 그래픽 모드 지원 버전 출력
 
     mov ax, 0
     call _mask_pic

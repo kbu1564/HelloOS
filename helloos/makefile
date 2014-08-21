@@ -21,24 +21,24 @@ all: compile writer
 
 # 부트로더 및 커널 컴파일 수행
 compile:
-    $(MAKE) -C $(BOOTLOADER_DIR)
-    $(MAKE) -C $(KERNEL_DIR)
+	$(MAKE) -C $(BOOTLOADER_DIR)
+	$(MAKE) -C $(KERNEL_DIR)
 
 # 부트로더 설치 작업 수행 및
 # 1 섹터에 loader.img Bootloader Write
 bootwriter:
-    @$(BOOTLOADER_INSTALLER) 1 $(IMAGE_DIR)\loader.img
+	@$(BOOTLOADER_INSTALLER) 1 $(IMAGE_DIR)\loader.img
 
 # 커널 파일 설치
 writer:
-    @$(REMOVE) F:\kernel.sys
-    $(CP) $(IMAGE_DIR)\kernel.sys F:\kernel.sys
+	@$(REMOVE) F:\kernel.sys
+	$(CP) $(IMAGE_DIR)\kernel.sys F:\kernel.sys
 
 # 설치 된 내용을 바탕으로 실행
 run:
-    @cmd /c $(MAKE_OPTION)\$(x86_64_RUN)
+	@cmd /c $(MAKE_OPTION)\$(x86_64_RUN)
 
 # 기존의 설치 본 전부 제거
 clean:
-    $(MAKE) -C $(BOOTLOADER_DIR) clean
-    $(MAKE) -C $(KERNEL_DIR) clean
+	$(MAKE) -C $(BOOTLOADER_DIR) clean
+	$(MAKE) -C $(KERNEL_DIR) clean
