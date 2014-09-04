@@ -8,10 +8,28 @@ BootDiskNumber    equ 0x7C03 + 61
 ClusterBinaryData equ 0x4000
 DiskAddressPacket equ 0x5000
 
+FileName             equ 0x00
+FilenameExtension    equ 0x08
+FileFlag             equ 0x0B
+Unused               equ 0x0C
+HightStartingCluster equ 0x14
+Time                 equ 0x16
+Date                 equ 0x18
+LowStartingCluster   equ 0x1A
+FileSize             equ 0x1C
+
+; Long FileName Entry
+FirstLongFileName	 equ 0x01
+SecondLongFileName	 equ 0x0E
+ThirdLongFileName	 equ 0x1C
+
 _load_library:
     szFileName    equ 10
-    szFileExt     equ 265
+    szFileExt     equ 10 + 255
+	nLongEntry	  equ 10 + 255 + 255
     pusha
+	push bp
+	mov bp, sp
 
     mov al, byte [TotalFATs]
     ; FAT 의 개수 구하기
@@ -56,13 +74,84 @@ _load_library:
     jae .error_or_end
 
     ; 삭제된 파일인지 체크
-    cmp byte [di], 0xE5
+    cmp byte [di + FileName], 0xE5
     jne .find
 
-    add di, 0x20
-    jmp .read
+    jmp .next
+.long:
+    ; 긴 파일 이름 얻기
+    mov ah, byte [di + FileName]
+    test ah, 0x40
+	jz .lname
+	; LFE 개수 얻기
+	and ah, 10111111b
+	mov byte [bp + nLongEntry], ah
+
+	xor cx, cx
+	mov cl, ah
+	xor ax, ax
+	mov si, di
+	.lname:
+		mov si, di
+		mov ax, 5
+		.L1:
+			; need to modify!! 2014-09-05
+			; inc si!!
+			mov dx, word [si + FirstLongFileName]
+			mov byte [si + szFileName], dl
+
+			cmp dx, 0xFFFF
+			je .ENDL1
+
+			dec ax
+			test ax, ax
+			jnz .L1
+		.ENDL1:
+
+		mov ax, 6
+		.L2:
+			; need to modify!! 2014-09-05
+			; inc si!!
+			mov dx, word [si + SecondLongFileName]
+			mov byte [si + szFileName], dl
+
+			cmp dx, 0xFFFF
+			je .ENDL2
+
+			dec ax
+			test ax, ax
+			jnz .L2
+		.ENDL2:
+
+		mov ax, 2
+		.L3:
+			; need to modify!! 2014-09-05
+			; inc si!!
+			mov dx, word [si + ThirdLongFileName]
+			mov byte [si + szFileName], dl
+
+			cmp dx, 0xFFFF
+			je .ENDL1
+
+			dec ax
+			test ax, ax
+			jnz .L3
+		.ENDL3:
+
+		add si, 0x20
+		loop .lname
+
+    jmp .next
 .find:
 ; 유효한 파일 발견
+    ; 긴 이름의 파일 체크
+    ;
+    ; 파일 Flag 값의 3번째 비트의 값이 1이면
+    ; 긴파일 이름
+    mov ah, byte [di + FileFlag]
+    test ah, 0x0F
+    jnz .long
+
     push di
     ; 최근 발견 위치 저장
 
@@ -94,12 +183,14 @@ _load_library:
     inc bx
 
     pop di
+.next:
     add di, 0x20
-
     jmp .read
 .error_or_end:
     jmp $
 
+	mov sp, bp
+	pop bp
     popa
     ret
 

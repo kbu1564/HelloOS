@@ -1,6 +1,6 @@
 # Makefile
 # OS소스를 컴파일하여 최종 이미지 파일을 생성하기 위한 Makefile
-MAKE_OPTION := C:\Users\pro_hacker\Desktop\HelloOS
+MAKE_OPTION := C:\Users\pro_hacker\opensource\HelloOS\helloos
 # 자체 제작한 부트로더를 USB 장치에 Write 하는 프로그램
 BOOTLOADER_INSTALLER := .\Tools\BootloaderWriter.exe
 # 부트로더 소스 경로
@@ -31,8 +31,8 @@ bootwriter:
 
 # 커널 파일 설치
 writer:
-	@$(REMOVE) F:\kernel.sys
-	$(CP) $(IMAGE_DIR)\kernel.sys F:\kernel.sys
+	@$(REMOVE) H:\kernel.sys
+	$(CP) $(IMAGE_DIR)\kernel.sys H:\kernel.sys
 
 # 설치 된 내용을 바탕으로 실행
 run:

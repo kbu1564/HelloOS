@@ -1,5 +1,9 @@
 ; 특정 메모리 주소의 CX바이트 영역의 메모리 HEX 값을
 ; 덤프하는 함수
+; push 출력할 Y좌표 값
+; push 출력할 X좌표 값
+; push 출력할 바이트 수
+; push 출력할 메모리 주소
 _print_byte_dump:
     push bp
     mov bp, sp
