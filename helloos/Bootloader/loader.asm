@@ -39,15 +39,13 @@ _start:
     mov di, word [DAPOffset]
     ; 로드에 성공한 경우 커널 데이터 메모리 주소를 설정한다
 
-    ;jmp $
-    ; 현재위치 점프
-    mov cl, byte [di + 2]
-    cmp cl, 0x90
-    jne .kernel_load_error
+    mov al, byte [di + 2]
+    xor al, 0x90
+    jnz .kernel_load_error
     ; 올바른 커널 데이터 인지 체크
     
-    ; 커널데이터 위치로 점프
     jmp di
+    ; 커널데이터 위치로 점프
 
 .kernel_load_error:
     push 0

@@ -1,6 +1,6 @@
 # Makefile
 # OS소스를 컴파일하여 최종 이미지 파일을 생성하기 위한 Makefile
-MAKE_OPTION := C:\Users\pro_hacker\Desktop\HelloOS
+MAKE_OPTION := C:\Users\pro_hacker\opensource\HelloOS\helloos
 # 자체 제작한 부트로더를 USB 장치에 Write 하는 프로그램
 BOOTLOADER_INSTALLER := .\Tools\BootloaderWriter.exe
 # 부트로더 소스 경로
@@ -13,6 +13,8 @@ IMAGE_DIR := Image
 REMOVE := rm -rf
 # 복사 명령어
 CP := cp
+# 설치할 USB 드라이브 이름
+DRIVE_NUMBER := H
 
 x86_64_RUN := qemu-system-x86_64 -m 64 -fda .\loader.img -localtime -M pc
 #x86_64_RUN := H@cmd /c $(MAKE_OPTION)/HelloOS.lnk
@@ -31,13 +33,12 @@ bootwriter:
 
 # 커널 파일 설치
 writer:
-	@$(REMOVE) F:\kernel.sys
-	$(CP) $(IMAGE_DIR)\kernel.sys F:\kernel.sys
+	@$(REMOVE) $(DRIVE_NUMBER):\kernel.sys
+	$(CP) $(IMAGE_DIR)\kernel.sys $(DRIVE_NUMBER):\kernel.sys
 
 # 설치 된 내용을 바탕으로 실행
 run:
-	#$(x86_64_RUN)
-	$(x86_64_RUN)
+	@cmd /c $(MAKE_OPTION)\$(x86_64_RUN)
 
 # 기존의 설치 본 전부 제거
 clean:

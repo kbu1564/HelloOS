@@ -1,17 +1,22 @@
 ; 특정 메모리 주소의 CX바이트 영역의 메모리 HEX 값을
 ; 덤프하는 함수
+; push 출력할 Y좌표 값
+; push 출력할 X좌표 값
+; push 출력할 바이트 수
+; push 출력할 메모리 주소
 _print_byte_dump:
     push bp
     mov bp, sp
 
     pusha
 
-    mov dl, byte [LineCounter]
+    ; 라인수 계산하기
+    mov dl, byte [bp+10]
     mov al, 80*2
     mul dl
+	add ax, word [bp+8]
 
     inc dl
-    mov byte [LineCounter], dl
     ; 라인수 계산
     mov si, ax
 
@@ -87,6 +92,4 @@ _print_byte_dump:
 
     mov sp, bp
     pop bp
-    ret 4
-
-LineCounter:    db 0
+    ret 8

@@ -64,22 +64,26 @@ _print_hex32:
 
 ; 특정 메모리 주소의 CX바이트 영역의 메모리 HEX 값을
 ; 덤프하는 함수
+; push 출력할 Y좌표 값
+; push 출력할 X좌표 값
+; push 출력할 바이트 수
+; push 출력할 메모리 주소
 _print_byte_dump32:
     push ebp
     mov ebp, esp
     pusha
 
-    push es
+    mov ax, es
+    push ax
     ; descriptor 백업
 
-    mov dl, byte [LineCounter32]
-    mov al, 80*2
-    mul dl
-
-    inc dl
-    mov byte [LineCounter32], dl
-    ; 라인수 계산
-    mov si, ax
+    mov eax, [ebp+20]
+    mov ecx, 80
+    mul ecx
+    add eax, [ebp+16]
+    shl eax, 1
+    mov esi, eax
+    ; 라인수 계산하기
 
     xor edx, edx
     xor ax, ax
@@ -125,8 +129,8 @@ _print_byte_dump32:
     jbe .hex1byteSpace
     ; di 값이 짝수라면 공백을 출력하지 않음
 
-    mov byte [es:si], 0x20
-    mov byte [es:si+1], 0x04
+    mov byte [es:esi], 0x20
+    mov byte [es:esi+1], 0x04
     ; 공백 출력
     add si, 2
 .hex1byteSpace:
@@ -140,8 +144,8 @@ _print_byte_dump32:
     add al, 0x37
     ; 10 ~ 15
 .hex4bitPrint:
-    mov byte [es:si], al
-    mov byte [es:si+1], 0x04
+    mov byte [es:esi], al
+    mov byte [es:esi+1], 0x04
 
     add si, 2
     inc dx
@@ -156,6 +160,4 @@ _print_byte_dump32:
     popa
     mov esp, ebp
     pop ebp
-    ret 8
-
-LineCounter32:  db 0
+    ret 16

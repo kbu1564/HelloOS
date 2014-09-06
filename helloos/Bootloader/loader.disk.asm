@@ -48,6 +48,9 @@ _disk_load_kernel_data_to_memory:
     ; RootDirectory 의 시작 위치 계산
     mov dword [DAPReadSector], eax
     ; 계산된 RootDirectoryEntry Sector 위치 셋팅
+    mov ax, word [SectorsPerCluster]
+    mov word [DAPReadSectorSize], ax
+    ; 1cluster 단위로 읽기
     ;-----------------------------------------------------------------------------------
 
     mov si, DAP
@@ -195,7 +198,7 @@ _disk_load_kernel_data_to_memory:
 ; Disk Address Packet
 DAP:
                     db 16, 0    ; Size of packet (10h or 18h)
-DAPReadSectorSize:  dw 3        ; Sectors to read
+DAPReadSectorSize:  dw 8        ; Sectors to read
 DAPOffset:          dw 0x8000   ; Offset
 DAPSegment:         dw 0        ; Segment
 DAPReadSector:      dq 1

@@ -1,4 +1,3 @@
-helloos/Image
-*.sys
-*.bin
-*.img
+kernel.sys
+loader.img
+loader.bin
