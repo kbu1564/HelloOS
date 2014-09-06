@@ -161,5 +161,3 @@ _print_byte_dump32:
     mov esp, ebp
     pop ebp
     ret 16
-
-LineCounter32:  db 0

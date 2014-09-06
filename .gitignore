@@ -1,4 +1,3 @@
-HelloOS/Image
-HelloOS/Tools/BootloaderWriter/
-*.sys
-*.bin
+kernel.sys
+loader.img
+loader.bin

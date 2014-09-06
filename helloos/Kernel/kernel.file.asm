@@ -1,13 +1,14 @@
 ; 파일 관련 Kernel API
-; si : 확장자를 제외한 라이브러리 파일 이름 OffsetAddress
-SectorsPerCluster equ 0x7C03 + 10
-ReservedSectors   equ 0x7C03 + 11
-TotalFATs         equ 0x7C03 + 13
-BigSectorsPerFAT  equ 0x7C03 + 33
-BootDiskNumber    equ 0x7C03 + 61
-ClusterBinaryData equ 0x4000
-DiskAddressPacket equ 0x5000
 
+; Bios Parameter Block
+SectorsPerCluster	 equ 0x7C03 + 10
+ReservedSectors		 equ 0x7C03 + 11
+TotalFATs			 equ 0x7C03 + 13
+BigSectorsPerFAT	 equ 0x7C03 + 33
+BootDiskNumber		 equ 0x7C03 + 61
+ClusterBinaryData	 equ 0x4000
+DiskAddressPacket	 equ 0x5000
+; File Allocation Table
 FileName             equ 0x00
 FilenameExtension    equ 0x08
 FileFlag             equ 0x0B
@@ -17,16 +18,15 @@ Time                 equ 0x16
 Date                 equ 0x18
 LowStartingCluster   equ 0x1A
 FileSize             equ 0x1C
-
 ; Long FileName Entry
 FirstLongFileName	 equ 0x01
 SecondLongFileName	 equ 0x0E
 ThirdLongFileName	 equ 0x1C
 
+; si : 확장자를 제외한 라이브러리 파일 이름 OffsetAddress
 _load_library:
     szFileName    equ 10
-    szFileExt     equ 10 + 255
-	nLongEntry	  equ 10 + 255 + 255
+	nLongEntry	  equ 10 + 255
     pusha
 	push bp
 	mov bp, sp
@@ -79,85 +79,115 @@ _load_library:
 
     jmp .next
 .long:
+	xor ax, ax
     ; 긴 파일 이름 얻기
-    mov ah, byte [di + FileName]
-    test ah, 0x40
+	mov bp, sp
+
+    mov al, byte [di + FileName]
+    test al, 0x40
 	jz .lname
 	; LFE 개수 얻기
-	and ah, 10111111b
-	mov byte [bp + nLongEntry], ah
+	and al, 10111111b
+	; When the data of seventh bit on first bytes is set,
+	; it is last entry of LFE(Long File Name Entry).
+	; LFE의 첫번째 바이트에서 7번째 비트가 1 인 경우
+	; LFE의 마지막 엔트리이다.
+
+	mov byte [bp + nLongEntry], al
+	; si = al * 0x20
+	mov cl, 0x20
+	mul cl
+	mov si, di
+	add si, ax
 
 	xor cx, cx
-	mov cl, ah
+	mov cl, byte [bp + nLongEntry]
 	xor ax, ax
-	mov si, di
+
+	mov word [bp + nLongEntry], si
+	push bp
+	; LFE 다음 Entry Offset 저장
 	.lname:
-		mov si, di
+		sub si, 0x20
+
+		mov di, si
 		mov ax, 5
 		.L1:
-			; need to modify!! 2014-09-05
-			; inc si!!
-			mov dx, word [si + FirstLongFileName]
-			mov byte [si + szFileName], dl
+			mov dx, word [di + FirstLongFileName]
+			mov word [bp + szFileName], dx
 
 			cmp dx, 0xFFFF
 			je .ENDL1
+
+			add di, 2
+			add bp, 1
 
 			dec ax
 			test ax, ax
 			jnz .L1
 		.ENDL1:
 
+		mov di, si
 		mov ax, 6
 		.L2:
-			; need to modify!! 2014-09-05
-			; inc si!!
-			mov dx, word [si + SecondLongFileName]
-			mov byte [si + szFileName], dl
+			mov dx, word [di + SecondLongFileName]
+			mov byte [bp + szFileName], dl
 
 			cmp dx, 0xFFFF
 			je .ENDL2
+
+			add di, 2
+			add bp, 1
 
 			dec ax
 			test ax, ax
 			jnz .L2
 		.ENDL2:
 
+		mov di, si
 		mov ax, 2
 		.L3:
-			; need to modify!! 2014-09-05
-			; inc si!!
-			mov dx, word [si + ThirdLongFileName]
-			mov byte [si + szFileName], dl
+			mov dx, word [di + ThirdLongFileName]
+			mov byte [bp + szFileName], dl
 
 			cmp dx, 0xFFFF
-			je .ENDL1
+			je .ENDL3
+
+			add di, 2
+			add bp, 1
 
 			dec ax
 			test ax, ax
 			jnz .L3
 		.ENDL3:
 
-		add si, 0x20
 		loop .lname
 
-    jmp .next
+	pop bp
+	mov dx, word [bp + nLongEntry]
+	; reset basePointer
+
+	pop di
+	push dx
+
+    jmp .print
 .find:
 ; 유효한 파일 발견
+    push di
+    ; 최근 발견 위치 저장
+
+	xor ax, ax
+    mov ah, byte [di + FileFlag]
+    test ah, 0x0F
+    jnz .long
     ; 긴 이름의 파일 체크
     ;
     ; 파일 Flag 값의 3번째 비트의 값이 1이면
     ; 긴파일 이름
-    mov ah, byte [di + FileFlag]
-    test ah, 0x0F
-    jnz .long
 
-    push di
-    ; 최근 발견 위치 저장
-
-    mov cx, 8
+	mov cx, 8
     mov si, di
-    mov di, sp
+    mov di, bp
     add di, szFileName
     call _back_trim
 
@@ -171,8 +201,8 @@ _load_library:
     mov cx, 3
     add si, 8
     call _back_trim
-
-    mov di, sp
+.print:
+    mov di, bp
     add di, szFileName
 
     push bx
@@ -189,7 +219,6 @@ _load_library:
 .error_or_end:
     jmp $
 
-	mov sp, bp
 	pop bp
     popa
     ret
