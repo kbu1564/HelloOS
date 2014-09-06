@@ -1,4 +1,4 @@
-HelloOS/Image
-HelloOS/Tools/BootloaderWriter/
+helloos/Image
 *.sys
 *.bin
+*.img
