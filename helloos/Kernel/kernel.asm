@@ -15,6 +15,7 @@ _entry:
 
     %include "../Bootloader/loader.print.asm"
     %include "../Bootloader/loader.debug.dump.asm"
+    %include "../Bootloader/loader.library.string.asm"
     ; 기본 라이브러리의 경우 부트로더쪽의 함수를 그대로 가져와 사용한다.
 
     ; Kernel Library
@@ -22,6 +23,9 @@ _entry:
     ; Vedio BIOS Extension Library
     %include "kernel.file.asm"
     ; Call Functions LoadLibrary
+_global_filename:
+    KernelFileName:   db 'long file name text file.txt_long_extension', 0
+    ; 로드할 커널 파일 이름
 _start:
     ; Kernel Entry Point
 
@@ -41,7 +45,8 @@ _start:
     mov gs, eax
     ; segment init
 
-    call _load_library
+    ;push KernelFileName
+    ;call _load_library
     ; 그래픽 모드 전환 부분
     ;int 0x10
 
