@@ -25,11 +25,16 @@ ThirdLongFileName	 equ 0x1C
 
 ; si : 확장자를 제외한 라이브러리 파일 이름 OffsetAddress
 _load_library:
-    szFileName    equ 10
-	nLongEntry	  equ 10 + 255
-    pusha
+    szFileName          equ 100
+	nLongEntry	        equ 100 + 255
+    szSearachFileName   equ 0x6000
+    ; 파일 이름과 확장자 이름은 최대 255자 까지 가능하다.
 	push bp
 	mov bp, sp
+    pusha
+
+    mov dx, word [bp + 4]
+    mov word [szSearachFileName], dx
 
     mov al, byte [TotalFATs]
     ; FAT 의 개수 구하기
@@ -164,13 +169,26 @@ _load_library:
 		loop .lname
 
 	pop bp
-	mov dx, word [bp + nLongEntry]
+	;mov dx, word [bp + nLongEntry]
 	; reset basePointer
 
 	pop di
-	push dx
+	push word [bp + nLongEntry]
 
-    jmp .print
+    mov di, bp
+    add di, szFileName
+
+    ; 인자로 보낸 파일명과 일치하는 파일이 존재하는지 체크
+    mov si, word [szSearachFileName]
+    call _strcmp
+    ; 이 비교 루틴이 정상 작동 안한다!!!
+
+    ; 검색하려는 파일이 존재하는 경우 파일명 출력
+    cmp ax, 0
+    je .print
+
+    pop di
+    jmp .next
 .find:
 ; 유효한 파일 발견
     push di
@@ -217,53 +235,7 @@ _load_library:
     add di, 0x20
     jmp .read
 .error_or_end:
-    jmp $
-
-	pop bp
+jmp $
     popa
-    ret
-
-; use this!!
-; mov cx, 8
-; mov si, srcString
-; mov di, dstString
-; call _back_trim
-; srcString 주소를 기준으로 8만큼의 크기의 문자의 뒷쪽
-; 공백을 제거한 뒤, dstString 주소를 기준으로 뒷쪽 공백이 제거된 문자열이 저장됩니다.
-; 공백이 제거된 문자열의 길이값이 ax register에 저장되어 리턴됩니다.
-; 해당 함수는 공백을 제거한뒤 문자열 맨 마지막에 NULL 문자를 삽입합니다.
-_back_trim:
-    push si
-    push di
-    push cx
-    push dx
-
-    xor dx, dx
-    ; 뒷부분 공백을 제거
-    add si, cx
-    dec si
-    ; void* src
-    add di, cx
-    dec di
-    ; void* dst
-    mov byte [di + 1], 0
-.copy:
-    mov al, byte [si]
-    mov byte [di], 0
-
-    cmp al, 0x20
-    je .copy_end
-
-    inc dx
-    mov byte [di], al
-.copy_end:
-    dec di
-    dec si
-    loop .copy
-
-    mov ax, dx
-    pop dx
-    pop cx
-    pop di
-    pop si
-    ret
+	pop bp
+    retn 2
