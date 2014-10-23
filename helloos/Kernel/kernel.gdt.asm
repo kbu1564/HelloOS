@@ -36,7 +36,7 @@ _kernel_init_gdt_table:
     push 010010010010b
     call _kernel_set_gdt
     ; VGA memory Address Setting
-    ; VGA Descriptor ±âÁØ ÁÖ¼Ò ¼ÂÆÃ
+    ; VGA Descriptor ê¸°ì¤€ ì£¼ì†Œ ì…‹íŒ…
 
     push TSSDescriptor
     push 0x000FFFFF
@@ -59,17 +59,17 @@ _kernel_set_gdt:
     mov di, word [esi]
     add di, 8
     mov word [esi], di
-    ; GDT SIZE °»½Å
-    ; GDT Entry Size ¸¸Å­ ´õÇÔÀ¸·Î½á ÀüÃ¼ Å©±â¸¦ Áõ°¡ ½ÃÅ²´Ù.
+    ; GDT SIZE ê°±ì‹ 
+    ; GDT Entry Size ë§Œí¼ ë”í•¨ìœ¼ë¡œì¨ ì „ì²´ í¬ê¸°ë¥¼ ì¦ê°€ ì‹œí‚¨ë‹¤.
     mov eax, esi
     add eax, 6
     mov dword [esi+2], eax
-    ; GDT ½ÃÀÛ ÁÖ¼Ò °»½Å
+    ; GDT ì‹œì‘ ì£¼ì†Œ ê°±ì‹ 
     add esi, 6
-    ; esi¸¦ GDT ½ÃÀÛ ºÎºĞÀ¸·Î ÁÖ¼Ò°ª °»½Å
+    ; esië¥¼ GDT ì‹œì‘ ë¶€ë¶„ìœ¼ë¡œ ì£¼ì†Œê°’ ê°±ì‹ 
     mov eax, dword [ebp+20]
-    ; Ãß°¡ÇÏ·Á´Â GDT ¿£Æ®¸® ±¸Á¶ÀÇ
-    ; ¸Ş¸ğ¸® ÀúÀå À§Ä¡ ÁÖ¼Ò°ª ¾ò±â
+    ; ì¶”ê°€í•˜ë ¤ëŠ” GDT ì—”íŠ¸ë¦¬ êµ¬ì¡°ì˜
+    ; ë©”ëª¨ë¦¬ ì €ì¥ ìœ„ì¹˜ ì£¼ì†Œê°’ ì–»ê¸°
     add esi, eax
 
     mov eax, dword [ebp+16]
@@ -77,39 +77,39 @@ _kernel_set_gdt:
     mov word [esi], ax
     shr eax, 16
     and al, 0x0F
-    ; segment size »óÀ§ 4ºñÆ® ¼³Á¤
+    ; segment size ìƒìœ„ 4ë¹„íŠ¸ ì„¤ì •
     mov byte [esi+6], al
 
     mov eax, dword [ebp+12]
     mov word [esi+2], ax
-    ; base addr ÇÏÀ§ 2¹ÙÀÌÆ®
+    ; base addr í•˜ìœ„ 2ë°”ì´íŠ¸
     shr eax, 16
     mov byte [esi+4], al
     mov byte [esi+7], ah
-    ; base addr »óÀ§ °¢°¢ 1¹ÙÀÌÆ®¾¿ ¼ÂÆÃ
+    ; base addr ìƒìœ„ ê°ê° 1ë°”ì´íŠ¸ì”© ì…‹íŒ…
     mov eax, dword [ebp+8]
     mov byte [esi+5], al
     mov al, byte [esi+6]
     ; P DPL S TYPE : al
     shl ah, 4
-    ; ÇÏÀ§ 4ºñÆ® -> »óÀ§ 4ºñÆ®·Î ÀÌµ¿
+    ; í•˜ìœ„ 4ë¹„íŠ¸ -> ìƒìœ„ 4ë¹„íŠ¸ë¡œ ì´ë™
     or ah, al
     mov byte [esi+6], ah
     ; G D/B L AVL : ah
-    ; ¿É¼Ç ¼ÂÆÃ
+    ; ì˜µì…˜ ì…‹íŒ…
 
     popa
     mov esp, ebp
     pop ebp
     ret 16
 
-; GDT Å×ÀÌºí µî·Ï
+; GDT í…Œì´ë¸” ë“±ë¡
 _kernel_load_gdt:
     mov esi, dword [gdtr_addr]
     lgdt [esi]
     ret
 
-; TSS ¼¼±×¸ÕÆ® ¼ÂÆÃ
+; TSS ì„¸ê·¸ë¨¼íŠ¸ ì…‹íŒ…
 _kernel_load_tss:
     ltr di
     ret
@@ -119,8 +119,8 @@ _kernel_load_tss:
 ;--------------------------------------------------------
 gdtr_addr:      dd 0x00400000
 gdtr:
-    dw gdtEnd - gdt - 1 ; GDT Table ÀüÃ¼ Size
-    dd gdt              ; GDT Table ÀÇ ½ÇÁ¦ ½ÃÀÛ ÁÖ¼Ò
+    dw gdtEnd - gdt - 1 ; GDT Table ì „ì²´ Size
+    dd gdt              ; GDT Table ì˜ ì‹¤ì œ ì‹œì‘ ì£¼ì†Œ
 gdt:
     NullDescriptor equ 0x00
         dd 0, 0
@@ -142,7 +142,7 @@ gdt:
         db 0x00
 
     VideoDescriptor equ 0x18
-    ; ºñµğ¿À ¼¼±×¸ÕÆ®
+    ; ë¹„ë””ì˜¤ ì„¸ê·¸ë¨¼íŠ¸
         dw 0xFFFF
         dw 0x8000
         db 0x0B
@@ -151,7 +151,7 @@ gdt:
         db 0x00
 
     VGADescriptor equ 0x20
-    ; ±×·¡ÇÈ(VGA) ¼¼±×¸ÕÆ®
+    ; ê·¸ë˜í”½(VGA) ì„¸ê·¸ë¨¼íŠ¸
         dw 0xFFFF
         dw 0x0000
         db 0x00
@@ -160,9 +160,9 @@ gdt:
         db 0x00
 
     TSSDescriptor equ 0x28
-    ; TSS ¼¼±×¸ÕÆ® ¹øÈ£ ¼±¾ğ
-    ; ±¸Á¶ µî·ÏÀº ÃßÈÄ _kernel_init_gdt_table(); ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ¿©
-    ; ´Ù½Ã Àç µî·ÏÇÑ´Ù.
+    ; TSS ì„¸ê·¸ë¨¼íŠ¸ ë²ˆí˜¸ ì„ ì–¸
+    ; êµ¬ì¡° ë“±ë¡ì€ ì¶”í›„ _kernel_init_gdt_table(); í•¨ìˆ˜ë¥¼ ì´ìš©í•˜ì—¬
+    ; ë‹¤ì‹œ ì¬ ë“±ë¡í•œë‹¤.
 gdtEnd:
 ;-------------------------------------------------------------------
 ; {{Descriptor Description}}
@@ -170,30 +170,30 @@ gdtEnd:
 ; dw 0xFFFF
 ; [SEGMENT SIZE]
 ; 1111 1111 1111 1111
-; ÀÌ ºÎºĞÀÇ °ª°ú ¾Æ·¡ SEGMENT SIZE ÀÇ 4bit °ªÀ» ÇÕÇÏ¿©
-; ÃÑ 20bit·Î ¼¼±×¸ÕÆ®ÀÇ Å©±â¸¦ ³ªÅ¸³½´Ù
+; ì´ ë¶€ë¶„ì˜ ê°’ê³¼ ì•„ë˜ SEGMENT SIZE ì˜ 4bit ê°’ì„ í•©í•˜ì—¬
+; ì´ 20bitë¡œ ì„¸ê·¸ë¨¼íŠ¸ì˜ í¬ê¸°ë¥¼ ë‚˜íƒ€ë‚¸ë‹¤
 ; [G] : 0 -> 0 byte ~ 1 Mbyte
 ; [G] : 1 -> 0 byte ~ 4 Gbyte ( * 4 Kbyte)
 
 ; dw 0x0000
-; ±âÁØÁÖ¼Ò ÇÏÀ§ 16 bit
+; ê¸°ì¤€ì£¼ì†Œ í•˜ìœ„ 16 bit
 
 ; db 0x00
-; ±âÁØÁÖ¼Ò »óÀ§ 8 bit
+; ê¸°ì¤€ì£¼ì†Œ ìƒìœ„ 8 bit
 
 ; db 10011010b
 ; [P] [DPL] [S] [TYPE]
 ;  1   00    1   1 010
-; À¯È¿ / ½´ÆÛ±ÇÇÑ / ¼¼±×¸ÕÆ® / ÄÚµå:½ÇÇà,ÀĞ±â
+; ìœ íš¨ / ìŠˆí¼ê¶Œí•œ / ì„¸ê·¸ë¨¼íŠ¸ / ì½”ë“œ:ì‹¤í–‰,ì½ê¸°
 
 ; db 11001111b
 ; [G] [D/B] [L] [AVL] [SEGMENT SIZE]
 ;  1    1    0    0        1111
-; [G] : ÁÖ¼Ò ¹üÀ§¸¦ 0 ~ 4 Gbyte±îÁö È®Àå
+; [G] : ì£¼ì†Œ ë²”ìœ„ë¥¼ 0 ~ 4 Gbyteê¹Œì§€ í™•ì¥
 ; [D/B] : 32 bit Segment
-; [AVL] : 64 bit Mode ¿¡¼­ 32 bit È£È¯ Segment ÀÓÀ» ÀÇ¹Ì
-; [SEGMENT SIZE] : ¼¼±×¸ÕÆ® Å©±âÀÇ »óÀ§ 4 bit
+; [AVL] : 64 bit Mode ì—ì„œ 32 bit í˜¸í™˜ Segment ì„ì„ ì˜ë¯¸
+; [SEGMENT SIZE] : ì„¸ê·¸ë¨¼íŠ¸ í¬ê¸°ì˜ ìƒìœ„ 4 bit
 
 ; db 0x00
-; ±âÁØ ÁÖ¼Ò ÃÖ»óÀ§ 8 bit
+; ê¸°ì¤€ ì£¼ì†Œ ìµœìƒìœ„ 8 bit
 ;-------------------------------------------------------------------

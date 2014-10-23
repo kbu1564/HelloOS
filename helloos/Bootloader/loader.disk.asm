@@ -167,7 +167,7 @@ _disk_load_kernel_data_to_memory:
     mov dword [DAPReadSector], eax
     ; 파일 데이터 섹터 = RootDirectoryEntry 시작 섹터 + 파일 클러스터 번호 * 8sector(1cluster)
 
-    mov word [DAPReadSectorSize], 8+4
+    mov word [DAPReadSectorSize], 8 + 4
     ; 1cluster read!!
 
     mov si, DAP

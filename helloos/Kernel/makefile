@@ -10,4 +10,4 @@ install: kernel.sys
 	nasm -f bin -o $@ $<
 
 clean:
-	@$(REMOVE) *.sys
+	@$(REMOVE) kernel.sys

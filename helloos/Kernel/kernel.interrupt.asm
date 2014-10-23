@@ -1,4 +1,4 @@
-; °¢Á¾ ·¹Áö½ºÅÍ¿Í ¼¼±×¸ÕÆ® »óÅÂ¸¦ ¹é¾÷ÇÏ´Â ¸ÅÅ©·Î
+; ê°ì¢… ë ˆì§€ìŠ¤í„°ì™€ ì„¸ê·¸ë¨¼íŠ¸ ìƒíƒœë¥¼ ë°±ì—…í•˜ëŠ” ë§¤í¬ë¡œ
 %macro SEG_REG_SAVE 0
     push ebp
     mov ebp, esp
@@ -19,7 +19,7 @@
     mov ax, DataDescriptor
     mov es, ax
 %endmacro
-; °¢Á¾ ·¹Áö½ºÅÍ¿Í ¼¼±×¸ÕÆ® »óÅÂ¸¦ º¹±¸ÇÏ´Â ¸ÅÅ©·Î
+; ê°ì¢… ë ˆì§€ìŠ¤í„°ì™€ ì„¸ê·¸ë¨¼íŠ¸ ìƒíƒœë¥¼ ë³µêµ¬í•˜ëŠ” ë§¤í¬ë¡œ
 %macro SEG_REG_LOAD 0
     pop ax
     mov ds, ax
@@ -37,27 +37,27 @@
     pop ebp
 %endmacro
 
-; ÀÎÅÍ·´Æ® Å×ÀÌºí ÃÊ±âÈ­
+; ì¸í„°ëŸ½íŠ¸ í…Œì´ë¸” ì´ˆê¸°í™”
 _kernel_init_idt_table:
     mov ax, DataDescriptor
     mov es, ax
 
-    ; IDT Á¤º¸°¡ ¿Ã¶ó°¥ ½ÃÀÛ ¸Ş¸ğ¸® ÁÖ¼Ò ¼³Á¤
-    ; ±âº»ÀûÀ¸·Î GDT Á¤º¸ ¹Ù·Î ´ÙÀ½¿¡ ¿Ã¶ó°£´Ù.
+    ; IDT ì •ë³´ê°€ ì˜¬ë¼ê°ˆ ì‹œì‘ ë©”ëª¨ë¦¬ ì£¼ì†Œ ì„¤ì •
+    ; ê¸°ë³¸ì ìœ¼ë¡œ GDT ì •ë³´ ë°”ë¡œ ë‹¤ìŒì— ì˜¬ë¼ê°„ë‹¤.
 
     mov esi, dword [idtr]
     mov word [esi], 256*8-1
-    ; IDT ÀüÃ¼ Å©±â ÃÊ±âÈ­
+    ; IDT ì „ì²´ í¬ê¸° ì´ˆê¸°í™”
     mov eax, esi
     add eax, 6
     mov dword [esi+2], eax
     ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ; IDT ½ÃÀÛ À§Ä¡°ª ¼ÂÆÃ                                            !
-    ; ÀÌºÎºĞÀÌ Àß¸ø ÁöÁ¤µÇ¾î ±×µ¿¾È ÀÎÅÍ·´Æ®¸¸ °É¸®¸é Æ¨±â´Â °ÍÀÌ¿´´Ù. !
+    ; IDT ì‹œì‘ ìœ„ì¹˜ê°’ ì…‹íŒ…                                            !
+    ; ì´ë¶€ë¶„ì´ ì˜ëª» ì§€ì •ë˜ì–´ ê·¸ë™ì•ˆ ì¸í„°ëŸ½íŠ¸ë§Œ ê±¸ë¦¬ë©´ íŠ•ê¸°ëŠ” ê²ƒì´ì˜€ë‹¤. !
     ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ;---------------------------------------------------------------
-    ; ¿¹¿Ü ÇÚµé·¯ µî·Ï
+    ; ì˜ˆì™¸ í•¸ë“¤ëŸ¬ ë“±ë¡
     ;---------------------------------------------------------------
     push 0
     push __int_devide_error
@@ -196,7 +196,7 @@ _kernel_init_idt_table:
     jne .ETC_EXCEPTION_LOOP
 
     ;---------------------------------------------------------------
-    ; ÀÎÅÍ·´Æ® ÇÚµé·¯ µî·Ï
+    ; ì¸í„°ëŸ½íŠ¸ í•¸ë“¤ëŸ¬ ë“±ë¡
     ;---------------------------------------------------------------
     push 32
     push __int_timer
@@ -308,13 +308,13 @@ _kernel_init_idt_table:
     cmp ecx, 0
     dec ecx
     jne .ETC_INTERRUPT_LOOP
-    ; 256°³ÀÇ ÀÎÅÍ·´Æ®µéÀ» ÃÊ±âÈ­ Ã³¸® ÇÑ´Ù.
+    ; 256ê°œì˜ ì¸í„°ëŸ½íŠ¸ë“¤ì„ ì´ˆê¸°í™” ì²˜ë¦¬ í•œë‹¤.
 
     ret
 
-; Æ¯Á¤ ÀÎÅÍ·´Æ®¸¦ µî·ÏÇÏ´Â ÇÔ¼ö
+; íŠ¹ì • ì¸í„°ëŸ½íŠ¸ë¥¼ ë“±ë¡í•˜ëŠ” í•¨ìˆ˜
 ; void kernel_set_idt(WORD interrupt_number, void(*interrupt_handle)(), WORD segment, WORD options);
-; i_interrupt_number ¹øÂ°ÀÇ ÀÎÅÍ·´Æ® ÇÔ¼ö¸¦ *interrupt_handle·Î µî·ÏÇÑ´Ù.
+; i_interrupt_number ë²ˆì§¸ì˜ ì¸í„°ëŸ½íŠ¸ í•¨ìˆ˜ë¥¼ *interrupt_handleë¡œ ë“±ë¡í•œë‹¤.
 _kernel_set_idt:
     push ebp
     mov ebp, esp
@@ -330,40 +330,40 @@ _kernel_set_idt:
     ;mov ax, word [esi]
     ;add ax, 8
     ;mov word [esi], ax
-    ; IDT ÀüÃ¼ Å©±â°ª °»½Å
+    ; IDT ì „ì²´ í¬ê¸°ê°’ ê°±ì‹ 
 
     mov edi, dword [ebp+20]
     shl edi, 3
     add edi, eax
-    ; edi : ÇØ´ç ÀÎÅÍ·´Æ®ÀÇ µî·Ï ½ÃÀÛ ÁÖ¼Ò
+    ; edi : í•´ë‹¹ ì¸í„°ëŸ½íŠ¸ì˜ ë“±ë¡ ì‹œì‘ ì£¼ì†Œ
 
     mov eax, dword [ebp+16]
     mov word [edi], ax
-    ; interrupt handler µî·Ï
+    ; interrupt handler ë“±ë¡
     
     mov eax, dword [ebp+12]
     mov word [edi+2], ax
-    ; access segment µî·Ï
+    ; access segment ë“±ë¡
 
     mov eax, dword [ebp+8]
     mov al, 1 & 0x3
     mov word [edi+4], ax
-    ; interrupt options µî·Ï
+    ; interrupt options ë“±ë¡
 
     mov word [edi+6], 0
-    ; 64bit¸ğµå¿ë È®Àå ÁÖ¼Ò
+    ; 64bitëª¨ë“œìš© í™•ì¥ ì£¼ì†Œ
 
     popa
     mov esp, ebp
     pop ebp
     ret 16
 
-; IDT ·Îµå ÇÔ¼ö
+; IDT ë¡œë“œ í•¨ìˆ˜
 _kernel_load_idt:
     lidt [esi]
     ret
 
-; ÀÎÅÍ·´Æ® Ã³¸® ÇÚµé·¯
+; ì¸í„°ëŸ½íŠ¸ ì²˜ë¦¬ í•¸ë“¤ëŸ¬
 ; edi : interrupt number
 ; esi : error code
 _kernel_interrupt_handler:
@@ -383,10 +383,10 @@ _kernel_interrupt_handler:
     sub edi, 32
     push edi
     call _send_eoi_to_pic
-    ; PIC¿¡°Ô ÀÎÅÍ·´Æ® Á¾·á ½ÅÈ£ º¸³»±â
+    ; PICì—ê²Œ ì¸í„°ëŸ½íŠ¸ ì¢…ë£Œ ì‹ í˜¸ ë³´ë‚´ê¸°
     ret
 
-; ¿¹¿Ü Ã³¸® ÇÚµé·¯
+; ì˜ˆì™¸ ì²˜ë¦¬ í•¸ë“¤ëŸ¬
 ; edi : exception number
 ; esi : error code
 _kernel_exception_handler:
@@ -416,8 +416,8 @@ _kernel_exception_handler:
 .L1:
     hlt
     jmp .L1
-    ; ¿¹¿Ü ¹ß»ı½Ã ¾ÆÁ÷Àº Ä¿³Î¿µ¿ªÀÇ ¿¹¿Ü ÀÌ¹Ç·Î
-    ; ¹«ÇÑ·çÇÁ¸¦ ½ÇÇà½ÃÅ²´Ù.
+    ; ì˜ˆì™¸ ë°œìƒì‹œ ì•„ì§ì€ ì»¤ë„ì˜ì—­ì˜ ì˜ˆì™¸ ì´ë¯€ë¡œ
+    ; ë¬´í•œë£¨í”„ë¥¼ ì‹¤í–‰ì‹œí‚¨ë‹¤.
 
     ret
 
@@ -517,7 +517,7 @@ __int_double_fault:
 
     SEG_REG_LOAD
     add ebp, 4
-    ; error code¸¦ ½ºÅÃ¿¡¼­ Á¦°Å
+    ; error codeë¥¼ ìŠ¤íƒì—ì„œ ì œê±°
     iretd
 
 ; #9, Coprocessor Segment Overrun ISR
@@ -540,7 +540,7 @@ __int_invalid_tss:
 
     SEG_REG_LOAD
     add ebp, 4
-    ; error code¸¦ ½ºÅÃ¿¡¼­ Á¦°Å
+    ; error codeë¥¼ ìŠ¤íƒì—ì„œ ì œê±°
     iretd
 
 ; #11, Segment Not Present ISR
@@ -553,7 +553,7 @@ __int_segment_not_present:
 
     SEG_REG_LOAD
     add ebp, 4
-    ; error code¸¦ ½ºÅÃ¿¡¼­ Á¦°Å
+    ; error codeë¥¼ ìŠ¤íƒì—ì„œ ì œê±°
     iretd
 
 ; #12, Stack Segment Fault ISR
@@ -566,7 +566,7 @@ __int_stack_segment_fault:
 
     SEG_REG_LOAD
     add ebp, 4
-    ; error code¸¦ ½ºÅÃ¿¡¼­ Á¦°Å
+    ; error codeë¥¼ ìŠ¤íƒì—ì„œ ì œê±°
     iretd
 
 ; #13, General Protection ISR
@@ -579,7 +579,7 @@ __int_general_protection:
 
     SEG_REG_LOAD
     add ebp, 4
-    ; error code¸¦ ½ºÅÃ¿¡¼­ Á¦°Å
+    ; error codeë¥¼ ìŠ¤íƒì—ì„œ ì œê±°
     iretd
 
 ; #14, Page Fault ISR
@@ -592,7 +592,7 @@ __int_page_fault:
 
     SEG_REG_LOAD
     add ebp, 4
-    ; error code¸¦ ½ºÅÃ¿¡¼­ Á¦°Å
+    ; error codeë¥¼ ìŠ¤íƒì—ì„œ ì œê±°
     iretd
 
 ; #15, Reserved ISR
@@ -605,7 +605,7 @@ __int_reserved_15:
 
     SEG_REG_LOAD
     add ebp, 4
-    ; error code¸¦ ½ºÅÃ¿¡¼­ Á¦°Å
+    ; error codeë¥¼ ìŠ¤íƒì—ì„œ ì œê±°
     iretd
 
 ; #16, FPU Error ISR
@@ -618,7 +618,7 @@ __int_fpu_error:
 
     SEG_REG_LOAD
     add ebp, 4
-    ; error code¸¦ ½ºÅÃ¿¡¼­ Á¦°Å
+    ; error codeë¥¼ ìŠ¤íƒì—ì„œ ì œê±°
     iretd
 
 ; #17, Alignment Check ISR
@@ -631,7 +631,7 @@ __int_alignment_check:
 
     SEG_REG_LOAD
     add ebp, 4
-    ; error code¸¦ ½ºÅÃ¿¡¼­ Á¦°Å
+    ; error codeë¥¼ ìŠ¤íƒì—ì„œ ì œê±°
     iretd
 
 ; #18, Machine Check ISR
@@ -841,9 +841,9 @@ __int_etc_interrupt:
 ; -------------------------------
 ; | P | DPL | 0 | D | 1 | 1 | 0 |
 ; -------------------------------
-; P : Á¸Àç À¯¹«
-; DPL : Æ¯±Ç ·¹º§(2bit)
-; D : 16bit ÀÎÁö? 32bit ÀÎÁö?
+; P : ì¡´ì¬ ìœ ë¬´
+; DPL : íŠ¹ê¶Œ ë ˆë²¨(2bit)
+; D : 16bit ì¸ì§€? 32bit ì¸ì§€?
 ;---------------------------------------
 idtr:           dd 0x00401000
 ;   dw 256 * 8 - 1
@@ -851,5 +851,5 @@ idtr:           dd 0x00401000
 ;__idt_nothing:
 ;   dw __int_nothing    ; Handler Address1
 ;   dw CodeDescriptor
-;   dw 0x00, 0x8E       ; 10001110b : ÇÏÀ§ 1byte : Option Information
+;   dw 0x00, 0x8E       ; 10001110b : í•˜ìœ„ 1byte : Option Information
 ;   dw 0x0000           ; Handler Address2

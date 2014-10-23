@@ -38,17 +38,28 @@ _start:
     ; 이 경우 초기화 작업을 수행시켜 주면 된다.
     ; 참고 : http://www.joinc.co.kr/modules/moniwiki/wiki.php/%BA%B8%C8%A3%B8%F0%B5%E5
     ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    xor eax, eax
-    mov es, eax
-    mov ds, eax
-    mov fs, eax
-    mov gs, eax
+    xor ax, ax
+    mov es, ax
+    mov ds, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov sp, 0xffff
     ; segment init
 
-    ;push KernelFileName
-    ;call _load_library
+    push 0x0000
+    push 0x1000
+    push KernelFileName
+    call _load_library
     ; 그래픽 모드 전환 부분
     ;int 0x10
+
+    ;push 9
+    ;push 0
+    ;push 0x16
+    ;push 0x1000
+    ;call _print_byte_dump
+    ; 파일 로드 테스트
 
     call _get_vbe_info
     ; load graphics information(vbe)
@@ -260,9 +271,9 @@ _protect_entry:
 ;   ; 여러가지 인터럽트 예외를 강제적으로 발생시킨다.
 ;   ;-------------------------------------------------------------
 ;   ; devide error!!
-;   mov eax, 10
-;   mov ecx, 0
-;   div ecx
+;    mov eax, 10
+;    mov ecx, 0
+;    div ecx
 
 ;   ;-----------------------------------------------------------------------
 ;   ; 0xF0000000의 논리 주소를 0x01000000의 물리 메모리 주소로 Mapping
