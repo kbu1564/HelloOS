@@ -1,6 +1,6 @@
 # Makefile
 # OS소스를 컴파일하여 최종 이미지 파일을 생성하기 위한 Makefile
-MAKE_OPTION := .
+MAKE_OPTION = .
 # 자체 제작한 부트로더를 USB 장치에 Write 하는 프로그램
 BOOTLOADER_INSTALLER = .\Tools\BootloaderWriter.exe
 # 부트로더 소스 경로
@@ -31,8 +31,8 @@ all: compile clean
 
 # 부트로더 및 커널 컴파일 수행
 compile:
-	$(MAKE) $(INCLUDE_OPTIONS) -C $(BOOTLOADER_DIR)
-	$(MAKE) $(INCLUDE_OPTIONS) -C $(KERNEL_DIR)
+	@$(MAKE) $(INCLUDE_OPTIONS) -C $(BOOTLOADER_DIR)
+	@$(MAKE) $(INCLUDE_OPTIONS) -C $(KERNEL_DIR)
 
 # 부트로더 설치 작업 수행 및
 # 1 섹터에 loader.img Bootloader Write
@@ -50,5 +50,5 @@ run:
 
 # 기존의 설치 본 전부 제거
 clean:
-	$(MAKE) $(INCLUDE_OPTIONS) -C $(BOOTLOADER_DIR) clean
-	$(MAKE) $(INCLUDE_OPTIONS) -C $(KERNEL_DIR) clean
+	@$(MAKE) $(INCLUDE_OPTIONS) -C $(BOOTLOADER_DIR) clean
+	@$(MAKE) $(INCLUDE_OPTIONS) -C $(KERNEL_DIR) clean

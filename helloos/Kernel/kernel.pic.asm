@@ -1,4 +1,4 @@
-; I/O Port ÇÔ¼ö
+; I/O Port í•¨ìˆ˜
 ;
 ; o port byte
 _out_port_byte:
@@ -20,7 +20,7 @@ _in_port_word:
     in ax, dx
     ret
 
-; PIC °ü·Ã Master¿Í Slave¸¦ ÃÊ±âÈ­ ¼ÂÆÃÇÏ´Â ÇÔ¼ö
+; PIC ê´€ë ¨ Masterì™€ Slaveë¥¼ ì´ˆê¸°í™” ì…‹íŒ…í•˜ëŠ” í•¨ìˆ˜
 _init_pic:
     mov dl, 0x20
     mov al, 0x11
@@ -29,12 +29,12 @@ _init_pic:
     mov dl, 0x21
     mov al, 0x20
     call _out_port_byte
-    ; 0 ~ 31Àº ½Ã½ºÅÛ¿¡¼­ ¿¹¿Ü Ã³¸®¿¡ »ç¿ëÇÏ·Á ¿¹¾àµÈ º¤ÅÍ ÀÌ¹Ç·Î
-    ; 32¹ø ÀÌÈÄ ºÎÅÍ µî·Ï
+    ; 0 ~ 31ì€ ì‹œìŠ¤í…œì—ì„œ ì˜ˆì™¸ ì²˜ë¦¬ì— ì‚¬ìš©í•˜ë ¤ ì˜ˆì•½ëœ ë²¡í„° ì´ë¯€ë¡œ
+    ; 32ë²ˆ ì´í›„ ë¶€í„° ë“±ë¡
     mov dl, 0x21
     mov al, 0x04
     call _out_port_byte
-    ; ½½·¹ÀÌºê ÄÁÆ®·Ñ·¯ -> ¸¶½ºÅÍ ÄÁÆ®·Ñ·¯ PIC 2¹ø¿¡ ¿¬°á
+    ; ìŠ¬ë ˆì´ë¸Œ ì»¨íŠ¸ë¡¤ëŸ¬ -> ë§ˆìŠ¤í„° ì»¨íŠ¸ë¡¤ëŸ¬ PIC 2ë²ˆì— ì—°ê²°
     mov dl, 0x21
     mov al, 0x01
     call _out_port_byte
@@ -47,24 +47,24 @@ _init_pic:
     mov dl, 0xA1
     mov al, 0x20 + 8
     call _out_port_byte
-    ; ÀÎÅÍ·´Æ® ¹éÅÍ¸¦ 40¹øºÎÅÍ ÇÒ´ç
+    ; ì¸í„°ëŸ½íŠ¸ ë°±í„°ë¥¼ 40ë²ˆë¶€í„° í• ë‹¹
     mov dl, 0xA1
     mov al, 0x02
     call _out_port_byte
-    ; ½½·¹ÀÌºê ÄÁÆ®·Ñ·¯ -> ¸¶½ºÅÍ ÄÁÆ®·Ñ·¯ PIC 2¹ø¿¡ ¿¬°á
+    ; ìŠ¬ë ˆì´ë¸Œ ì»¨íŠ¸ë¡¤ëŸ¬ -> ë§ˆìŠ¤í„° ì»¨íŠ¸ë¡¤ëŸ¬ PIC 2ë²ˆì— ì—°ê²°
     mov dl, 0xA1
     mov al, 0x01
     call _out_port_byte
     ; uPM : 1
     ret
 
-; Æ¯Á¤ ÀÎÅÍ·´Æ®¸¦ ¹ß»ı½ÃÅ°Áö ¾Êµµ·Ï ¼ÂÆÃÇÏ´Â ÇÔ¼ö
+; íŠ¹ì • ì¸í„°ëŸ½íŠ¸ë¥¼ ë°œìƒì‹œí‚¤ì§€ ì•Šë„ë¡ ì…‹íŒ…í•˜ëŠ” í•¨ìˆ˜
 ; eax : maks_int_num
 _mask_pic:
     mov dl, 0x21
     call _out_port_byte
-    ; IRQ 0 ~ IRQ 7 ±îÁö ¸¶½ºÅ© ¼ÂÆÃ
-    ; ÇØ´ç ºñÆ®¿¡ 1ÀÌ ¼ÂÆÃµÈ °æ¿ì ÀÎÅÍ·´Æ®°¡ È£ÃâµÇÁö ¾Ê´Â´Ù.
+    ; IRQ 0 ~ IRQ 7 ê¹Œì§€ ë§ˆìŠ¤í¬ ì…‹íŒ…
+    ; í•´ë‹¹ ë¹„íŠ¸ì— 1ì´ ì…‹íŒ…ëœ ê²½ìš° ì¸í„°ëŸ½íŠ¸ê°€ í˜¸ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
     ; Master PIC
 
     shr ax, 8
@@ -74,7 +74,7 @@ _mask_pic:
     ; Slave PIC
     ret
 
-; EOI Ã³¸®¿ë ÇÔ¼ö
+; EOI ì²˜ë¦¬ìš© í•¨ìˆ˜
 ; eoi : end of interrupt
 ; void send_eoi_to_pic(int eoi_int_num);
 _send_eoi_to_pic:
@@ -87,17 +87,17 @@ _send_eoi_to_pic:
     mov dl, 0x20
     mov al, 0x20
     call _out_port_byte
-    ; Master PIC¿¡°Ô EOI Àü¼Û
+    ; Master PICì—ê²Œ EOI ì „ì†¡
 
     cmp eax, 8
     jb .end
-    ; IRQ ¹øÈ£°¡ 8ÀÌ»óÀÏ °æ¿ì ½½·¹ÀÌºê PIC ÀÎÅÍ·´Æ® ÀÌ¹Ç·Î ½½·¹ÀÌºê PIC¿¡°Ôµµ
-    ; EOI Àü¼Û
+    ; IRQ ë²ˆí˜¸ê°€ 8ì´ìƒì¼ ê²½ìš° ìŠ¬ë ˆì´ë¸Œ PIC ì¸í„°ëŸ½íŠ¸ ì´ë¯€ë¡œ ìŠ¬ë ˆì´ë¸Œ PICì—ê²Œë„
+    ; EOI ì „ì†¡
 
     mov dl, 0xA0
     mov al, 0x20
     call _out_port_byte
-    ; Master PIC¿¡°Ô EOI Àü¼Û
+    ; Master PICì—ê²Œ EOI ì „ì†¡
 .end:
     popa
     mov esp, ebp

@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
 	{
 		// 드라이브 셋팅
 		strDisk += strDriveNumber;
-		strDisk = "\\\\.\\F:";
+		strDisk = "\\\\.\\E:";
 
 		// 설치 파일 읽어들이기
 		FILE* fp = NULL;

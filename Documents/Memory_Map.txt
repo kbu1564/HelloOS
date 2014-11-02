@@ -34,7 +34,25 @@ HelloOS Memory Map (64MiB)
 ├───────────────────────────────────────┤ 0x00007E00
 │ Bootloader                            │
 ├───────────────────────────────────────┤ 0x00007C00
+│                                       │
 │ Not Used!!                            │
+│                                       │
+├───────────────────────────────────────┤ 0x00005300
+│ kernel.file.asm                       │
+│┌─────────────────────────────────────┐│ 0x00005300
+││ _load_library:szSearchFileName Area ││ This memory area is possible of use any time.
+│├─────────────────────────────────────┤│ 0x00005200
+││ _load_library:pLoadAddress Area     ││
+│├─────────────────────────────────────┤│ 0x00005100
+││ Disk Address Packet                 ││
+│├─────────────────────────────────────┤│ 0x00005000
+││ ClusterBinaryData                   ││
+│└─────────────────────────────────────┘│ 0x00004000
 ├───────────────────────────────────────┤ 0x00004000
-│────── Don't used read-only area ──────│
+│────── Don't used read-only area ──────│ Real Mode Interrupt Vector Table
+├───────────────────────────────────────┤ 0x000003FF
+│ Real Mode Interrupt Vector Table      │
 └───────────────────────────────────────┘ 0x00000000
+
+- 0x00004000 ~ 0x00005300
+  This memory area is use to save value of parameters in some others function.

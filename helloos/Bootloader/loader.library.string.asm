@@ -1,15 +1,30 @@
 ; mov si, srcString
 ; mov di, dstString
 ; call _strcmp
-; srcString ÁÖ¼Ò¸¦ ±âÁØÀ¸·Î dstString ÀÇ ¹®ÀÚ¿­ÀÌ ¿Ïº®È÷ ÀÏÄ¡ÇÏ´Â °æ¿ì
-; ax register¿¡ 0ÀÌ ÀúÀåµÊ
+; srcString ì£¼ì†Œë¥¼ ê¸°ì¤€ìœ¼ë¡œ dstString ì˜ ë¬¸ìžì—´ì´ ì™„ë²½ížˆ ì¼ì¹˜í•˜ëŠ” ê²½ìš°
+; ax registerì— 0ì´ ì €ìž¥ë¨
 _strcmp:
     push dx
+
+    ; push 10
+    ; push 0x04
+    ; push si
+    ; call _print
+    ; src ì¶œë ¥
+    
+    ; push 11
+    ; push 0x04
+    ; push di
+    ; call _print
+    ; dist ì¶œë ¥
 
     xor dx, dx
     xor ax, ax
     .L1:
+        ; null check
         cmp byte [si], 0
+        je .L1END
+        cmp byte [di], 0
         je .L1END
 
         mov dh, byte [di]
@@ -22,6 +37,7 @@ _strcmp:
     .L1END:
     jmp .end
 .notsame:
+    ; ë‘ ë¬¸ìžì—´ì€ ê°™ì§€ ì•ŠìŒ
     mov ax, 1
 .end:
     pop dx
@@ -32,10 +48,10 @@ _strcmp:
 ; mov si, srcString
 ; mov di, dstString
 ; call _back_trim
-; srcString ÁÖ¼Ò¸¦ ±âÁØÀ¸·Î 8¸¸Å­ÀÇ Å©±âÀÇ ¹®ÀÚÀÇ µÞÂÊ
-; °ø¹éÀ» Á¦°ÅÇÑ µÚ, dstString ÁÖ¼Ò¸¦ ±âÁØÀ¸·Î µÞÂÊ °ø¹éÀÌ Á¦°ÅµÈ ¹®ÀÚ¿­ÀÌ ÀúÀåµË´Ï´Ù.
-; °ø¹éÀÌ Á¦°ÅµÈ ¹®ÀÚ¿­ÀÇ ±æÀÌ°ªÀÌ ax register¿¡ ÀúÀåµÇ¾î ¸®ÅÏµË´Ï´Ù.
-; ÇØ´ç ÇÔ¼ö´Â °ø¹éÀ» Á¦°ÅÇÑµÚ ¹®ÀÚ¿­ ¸Ç ¸¶Áö¸·¿¡ NULL ¹®ÀÚ¸¦ »ðÀÔÇÕ´Ï´Ù.
+; srcString ì£¼ì†Œë¥¼ ê¸°ì¤€ìœ¼ë¡œ 8ë§Œí¼ì˜ í¬ê¸°ì˜ ë¬¸ìžì˜ ë’·ìª½
+; ê³µë°±ì„ ì œê±°í•œ ë’¤, dstString ì£¼ì†Œë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë’·ìª½ ê³µë°±ì´ ì œê±°ëœ ë¬¸ìžì—´ì´ ì €ìž¥ë©ë‹ˆë‹¤.
+; ê³µë°±ì´ ì œê±°ëœ ë¬¸ìžì—´ì˜ ê¸¸ì´ê°’ì´ ax registerì— ì €ìž¥ë˜ì–´ ë¦¬í„´ë©ë‹ˆë‹¤.
+; í•´ë‹¹ í•¨ìˆ˜ëŠ” ê³µë°±ì„ ì œê±°í•œë’¤ ë¬¸ìžì—´ ë§¨ ë§ˆì§€ë§‰ì— NULL ë¬¸ìžë¥¼ ì‚½ìž…í•©ë‹ˆë‹¤.
 _back_trim:
     push si
     push di
@@ -43,7 +59,7 @@ _back_trim:
     push dx
 
     xor dx, dx
-    ; µÞºÎºÐ °ø¹éÀ» Á¦°Å
+    ; ë’·ë¶€ë¶„ ê³µë°±ì„ ì œê±°
     add si, cx
     dec si
     ; void* src

@@ -10,4 +10,4 @@ install: loader.bin
 	nasm -f bin -o $@ $<
 
 clean:
-	@$(REMOVE) *.bin
+	@$(REMOVE) loader.bin

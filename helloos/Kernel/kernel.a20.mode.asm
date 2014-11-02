@@ -1,74 +1,74 @@
-; 1MB ÀÌ»óÀÇ ¸Þ¸ð¸® ¿µ¿ª¿¡ Á¢±ÙÇÏ±â À§ÇØ
-; A20 ±â´ÉÀ» On ÇÏ¿© 20¹øÂ° ºñÆ®¸¦ »ç¿ëÇÑ´Ù.
+; 1MB ì´ìƒì˜ ë©”ëª¨ë¦¬ ì˜ì—­ì— ì ‘ê·¼í•˜ê¸° ìœ„í•´
+; A20 ê¸°ëŠ¥ì„ On í•˜ì—¬ 20ë²ˆì§¸ ë¹„íŠ¸ë¥¼ ì‚¬ìš©í•œë‹¤.
 _set_a20_mode:
     call _wait_to_buffer_cpu
-    ; CPU°¡ µ¥ÀÌÅÍ»ç¿ëÀ» ³¡³¾¶§ ±îÁö ´ë±â ½ÃÅ²´Ù.
+    ; CPUê°€ ë°ì´í„°ì‚¬ìš©ì„ ëë‚¼ë•Œ ê¹Œì§€ ëŒ€ê¸° ì‹œí‚¨ë‹¤.
     
     mov dx, 0x64
     mov al, 0xD0
     out dx, al
-    ; 0x64 portÀÇ °ªÀ» 0x60 ·¹Áö½ºÅÍ¿¡ ±â·ÏÇÑ´Ù.
-    ; ÃßÈÄ 0xD1 ¸í·ÉÀ» ÅëÇØ ÀÌ ·¹Áö½ºÅÍÀÇ °ªÀ» »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+    ; 0x64 portì˜ ê°’ì„ 0x60 ë ˆì§€ìŠ¤í„°ì— ê¸°ë¡í•œë‹¤.
+    ; ì¶”í›„ 0xD1 ëª…ë ¹ì„ í†µí•´ ì´ ë ˆì§€ìŠ¤í„°ì˜ ê°’ì„ ì‚¬ìš©í•  ìˆ˜ ìžˆë‹¤.
 
     mov dx, 0x60
     in al, dx
     or al, 0x02
     ; enable A20
-    ; 0x60 Æ÷Æ®ÀÇ °ªÀ¸·Î ºÎÅÍ °ªÀ» ÀÐÀº µÚ 2¹øÂ° ºñÆ®¸¦ 1·Î ¼ÂÆÃÇÏ´Â °ÍÀ¸·Î
-    ; A20 ±â´ÉÀ» ÀÛµ¿ ½ÃÅ³ ¼ö ÀÖ´Ù.
+    ; 0x60 í¬íŠ¸ì˜ ê°’ìœ¼ë¡œ ë¶€í„° ê°’ì„ ì½ì€ ë’¤ 2ë²ˆì§¸ ë¹„íŠ¸ë¥¼ 1ë¡œ ì…‹íŒ…í•˜ëŠ” ê²ƒìœ¼ë¡œ
+    ; A20 ê¸°ëŠ¥ì„ ìž‘ë™ ì‹œí‚¬ ìˆ˜ ìžˆë‹¤.
     mov ah, al
-    ; A20 µ¥ÀÌÅÍ ÀÓ½Ã ÀúÀå
+    ; A20 ë°ì´í„° ìž„ì‹œ ì €ìž¥
 
     call _wait_to_buffer_cpu
-    ; CPU°¡ µ¥ÀÌÅÍ»ç¿ëÀ» ³¡³¾¶§ ±îÁö ´ë±â ½ÃÅ²´Ù.
+    ; CPUê°€ ë°ì´í„°ì‚¬ìš©ì„ ëë‚¼ë•Œ ê¹Œì§€ ëŒ€ê¸° ì‹œí‚¨ë‹¤.
 
     mov dx, 0x64
     mov al, 0xD1
     out dx, al
-    ; ½ÇÁ¦ out port¿¡ Àû¿ë µÇ´Â°ÍÀº ÀÌ ¸í·ÉÀ» »ç¿ëÇÑ Á÷ÈÄ 0x60¿¡ µ¥ÀÌÅÍ¸¦ ›§À» °æ¿ì¿¡ Àû¿ëµÈ´Ù.
-    ; 0x60¿¡ ÀúÀåµÈ °ªÀ» 0x64 Æ÷Æ®¿¡ Àû¿ë½ÃÅ²´Ù.
-    ; ÀÌ·Î ÀÎÇØ À­ ºÎºÐ¿¡¼­ A20À» »ç¿ëÇÏ±â À§ÇØ
-    ; 2¹øÂ° ºñÆ®¸¦ 1·Î ¼ÂÆÃÇÑ°ÍÀ» 0x64Æ÷Æ®¿¡ Àû¿ë ½ÃÅ³ ¼ö ÀÖ´Ù.
+    ; ì‹¤ì œ out portì— ì ìš© ë˜ëŠ”ê²ƒì€ ì´ ëª…ë ¹ì„ ì‚¬ìš©í•œ ì§í›„ 0x60ì— ë°ì´í„°ë¥¼ ì»ì„ ê²½ìš°ì— ì ìš©ëœë‹¤.
+    ; 0x60ì— ì €ìž¥ëœ ê°’ì„ 0x64 í¬íŠ¸ì— ì ìš©ì‹œí‚¨ë‹¤.
+    ; ì´ë¡œ ì¸í•´ ìœ— ë¶€ë¶„ì—ì„œ A20ì„ ì‚¬ìš©í•˜ê¸° ìœ„í•´
+    ; 2ë²ˆì§¸ ë¹„íŠ¸ë¥¼ 1ë¡œ ì…‹íŒ…í•œê²ƒì„ 0x64í¬íŠ¸ì— ì ìš© ì‹œí‚¬ ìˆ˜ ìžˆë‹¤.
 
     call _wait_to_buffer_cpu
-    ; CPU°¡ µ¥ÀÌÅÍ»ç¿ëÀ» ³¡³¾¶§ ±îÁö ´ë±â ½ÃÅ²´Ù.
+    ; CPUê°€ ë°ì´í„°ì‚¬ìš©ì„ ëë‚¼ë•Œ ê¹Œì§€ ëŒ€ê¸° ì‹œí‚¨ë‹¤.
 
     mov dx, 0x60
     mov al, ah
     out dx, al
-    ; A20 ±â´É¿¡ °üÇÑ µ¥ÀÌÅÍ¸¦ ½ÇÁ¦·Î 0x64Æ÷Æ®¿¡ Àû¿ë
+    ; A20 ê¸°ëŠ¥ì— ê´€í•œ ë°ì´í„°ë¥¼ ì‹¤ì œë¡œ 0x64í¬íŠ¸ì— ì ìš©
     
     call _wait_to_buffer_cpu
-    ; CPU°¡ µ¥ÀÌÅÍ»ç¿ëÀ» ³¡³¾¶§ ±îÁö ´ë±â ½ÃÅ²´Ù.
+    ; CPUê°€ ë°ì´í„°ì‚¬ìš©ì„ ëë‚¼ë•Œ ê¹Œì§€ ëŒ€ê¸° ì‹œí‚¨ë‹¤.
     ret
 
-; CPU°¡ input buffer¿¡ DATA¸¦ »ç¿ëÇÏ´Â ÁßÀÎÁö
-; Ã¼Å©ÇÏ¿© »ç¿ëÁßÀÌ ¾Æ´Ò¶§ ±îÁö ¹«ÇÑ ´ë±â ½ÃÅ²´Ù.
+; CPUê°€ input bufferì— DATAë¥¼ ì‚¬ìš©í•˜ëŠ” ì¤‘ì¸ì§€
+; ì²´í¬í•˜ì—¬ ì‚¬ìš©ì¤‘ì´ ì•„ë‹ë•Œ ê¹Œì§€ ë¬´í•œ ëŒ€ê¸° ì‹œí‚¨ë‹¤.
 _wait_to_buffer_cpu:
 .L1:
     mov dx, 0x64
     in al, dx
     test al, 0x20
-    ; »óÅÂ ·¹Áö½ºÅÍ·Î ºÎÅÍ input buffer¿¡ CPU Data°¡ Á¸ÀçÇÏ´ÂÁö Ã¼Å©
-    ; Ã¼Å©´Â 0x60 Æ÷Æ®·Î ºÎÅÍ 1byte ÀÐ¾îµéÀÎ µÚ 0x20¿Í and ¿¬»êÀ» ÅëÇØ ÇØ´ç
-    ; ºñÆ®°¡ ÄÑÁ®ÀÖ´ÂÁö¸¦ Ã¼Å©ÇÏ´Â ¹æ½ÄÀ¸·Î ÇÏ¸é µÈ´Ù.
+    ; ìƒíƒœ ë ˆì§€ìŠ¤í„°ë¡œ ë¶€í„° input bufferì— CPU Dataê°€ ì¡´ìž¬í•˜ëŠ”ì§€ ì²´í¬
+    ; ì²´í¬ëŠ” 0x60 í¬íŠ¸ë¡œ ë¶€í„° 1byte ì½ì–´ë“¤ì¸ ë’¤ 0x20ì™€ and ì—°ì‚°ì„ í†µí•´ í•´ë‹¹
+    ; ë¹„íŠ¸ê°€ ì¼œì ¸ìžˆëŠ”ì§€ë¥¼ ì²´í¬í•˜ëŠ” ë°©ì‹ìœ¼ë¡œ í•˜ë©´ ëœë‹¤.
     jnz .L1
-    ; CPU°¡ µ¥ÀÌÅÍ»ç¿ëÀ» ³¡³¾¶§ ±îÁö ´ë±â ½ÃÅ²´Ù.
+    ; CPUê°€ ë°ì´í„°ì‚¬ìš©ì„ ëë‚¼ë•Œ ê¹Œì§€ ëŒ€ê¸° ì‹œí‚¨ë‹¤.
     ret
 
-; A20 ±â´ÉÀÇ Á¤»ó µ¿ÀÛ ¿©ºÎ¸¦ È®ÀÎÇÏ¿© 
-; ÀÛµ¿ÀÌ ºÒ°¡´É ÇÑ °æ¿ì ax °ª¿¡ 0 °ªÀ» ¹ÝÈ¯ ½ÃÅ°°í
-; ÀÛµ¿ÀÌ °¡´ÉÇÑ °æ¿ì ax °ª¿¡ 1 °ªÀ» ¹ÝÈ¯ ½ÃÅ²´Ù.
-; 20 ¹øÂ° ºñÆ®°¡ 0ÀÎ ¸Þ¸ð¸®¸¦ 0À¸·Î ÃÊ±âÈ­ ÇÏ°í
-; 20 ¹øÂ° ºñÆ®°¡ 1ÀÎ ¸Þ¸ð¸®¿¡ °ªÀ» ¾²°í 0ÀÎ ¸Þ¸ð¸®°ú ºñ±³ÇÑ´Ù
+; A20 ê¸°ëŠ¥ì˜ ì •ìƒ ë™ìž‘ ì—¬ë¶€ë¥¼ í™•ì¸í•˜ì—¬ 
+; ìž‘ë™ì´ ë¶ˆê°€ëŠ¥ í•œ ê²½ìš° ax ê°’ì— 0 ê°’ì„ ë°˜í™˜ ì‹œí‚¤ê³ 
+; ìž‘ë™ì´ ê°€ëŠ¥í•œ ê²½ìš° ax ê°’ì— 1 ê°’ì„ ë°˜í™˜ ì‹œí‚¨ë‹¤.
+; 20 ë²ˆì§¸ ë¹„íŠ¸ê°€ 0ì¸ ë©”ëª¨ë¦¬ë¥¼ 0ìœ¼ë¡œ ì´ˆê¸°í™” í•˜ê³ 
+; 20 ë²ˆì§¸ ë¹„íŠ¸ê°€ 1ì¸ ë©”ëª¨ë¦¬ì— ê°’ì„ ì“°ê³  0ì¸ ë©”ëª¨ë¦¬ê³¼ ë¹„êµí•œë‹¤
 _test_a20_mode:
     mov ax, DataDescriptor
     mov ds, ax
 
     mov edi, 0x00000100
     mov dword [ds:edi], 0
-    ; ÀÛµ¿¿©ºÎ¸¦ È®ÀÎÇÏ±â À§ÇØ A20 Ã¼Å© ½ÃÁ¡¿¡¼­ ¸Þ¸ð¸® »ç¿ë°ú °ü°è¾ø´Â
-    ; Not Used ¿µ¿ªÀÇ ¸Þ¸ð¸®·Î Å×½ºÆ® ÇÑ´Ù.
+    ; ìž‘ë™ì—¬ë¶€ë¥¼ í™•ì¸í•˜ê¸° ìœ„í•´ A20 ì²´í¬ ì‹œì ì—ì„œ ë©”ëª¨ë¦¬ ì‚¬ìš©ê³¼ ê´€ê³„ì—†ëŠ”
+    ; Not Used ì˜ì—­ì˜ ë©”ëª¨ë¦¬ë¡œ í…ŒìŠ¤íŠ¸ í•œë‹¤.
 
     mov esi, 0x00100100
     mov dword [ds:esi], 0x12345678
@@ -80,6 +80,6 @@ _test_a20_mode:
     je .end
 
     mov ax, 0
-    ; A20 ±â´É ÀÛµ¿ ¿À·ù
+    ; A20 ê¸°ëŠ¥ ìž‘ë™ ì˜¤ë¥˜
 .end:
     ret
