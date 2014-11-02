@@ -60,10 +60,6 @@ _disk_load_kernel_data_to_memory:
     jc .end
     ; 오류 발생한 경우 함수 종료
 
-    ;push 2
-    ;push 0x04
-    ;push DiskReadError
-    ;call _print
     ; 오류 없이 성공적으로 섹터 읽기에 성공한 경우
 .success:
     ; 읽기에 성공하게 되면 메모리에
@@ -122,7 +118,7 @@ _disk_load_kernel_data_to_memory:
     cmp al, 10
     je .loop_end
 
-    mov ah, byte [es:bx]
+    mov ah, byte [bx]
     cmp ah, 0
     je .loop_end
     ; 위 조건이 만족하는 경우
@@ -176,11 +172,6 @@ _disk_load_kernel_data_to_memory:
     int 0x13
     jnc .end
     ; 커널 데이터 메모리 로드
-
-    ;push 4
-    ;push KernelAddress
-    ;call _print_byte_dump
-    ; 발견한 Kernel 데이터 주소 출력
 .error:
     push 0
     push 0x04

@@ -43,22 +43,19 @@ _start:
     mov ds, ax
     mov fs, ax
     mov gs, ax
-    mov ss, ax
     mov sp, 0xffff
     ; segment init
 
     push 0x0000
-    push 0x1000
+    push 0x6000
     push KernelFileName
     call _load_library
     ; 그래픽 모드 전환 부분
-    ;int 0x10
 
-    ;push 9
-    ;push 0
-    ;push 0x16
-    ;push 0x1000
-    ;call _print_byte_dump
+    push 13
+    push 0x07
+    push 0x6000
+    call _print
     ; 파일 로드 테스트
 
     call _get_vbe_info

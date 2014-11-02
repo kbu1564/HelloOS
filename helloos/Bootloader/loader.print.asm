@@ -3,6 +3,8 @@ _print:
     push bp
     mov bp, sp
     pusha
+    mov ax, es
+    push ax
     ; register push
 
     mov al, [bp+8]
@@ -31,6 +33,8 @@ _print:
     jmp .for_loop
     ; 루프 순회
 .for_end:
+    pop ax
+    mov es, ax
     popa
     mov sp, bp
     pop bp
@@ -39,6 +43,8 @@ _print:
 ; 화면 전체를 지우는 명령어
 _print_cls:
     pusha
+    mov ax, es
+    push ax
 
     mov si, 80*25*2
     ; 초기화 작업 수행
@@ -54,5 +60,7 @@ _print_cls:
     sub si, 1
     jmp .for_loop
 .for_end:
+    pop ax
+    mov es, ax
     popa
     ret

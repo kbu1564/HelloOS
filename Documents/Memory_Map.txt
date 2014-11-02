@@ -49,7 +49,9 @@ HelloOS Memory Map (64MiB)
 ││ ClusterBinaryData                   ││
 │└─────────────────────────────────────┘│ 0x00004000
 ├───────────────────────────────────────┤ 0x00004000
-│────── Don't used read-only area ──────│
+│────── Don't used read-only area ──────│ Real Mode Interrupt Vector Table
+├───────────────────────────────────────┤ 0x000003FF
+│ Real Mode Interrupt Vector Table      │
 └───────────────────────────────────────┘ 0x00000000
 
 - 0x00004000 ~ 0x00005300

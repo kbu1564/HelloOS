@@ -7,8 +7,9 @@
 _print_byte_dump:
     push bp
     mov bp, sp
-
     pusha
+    mov ax, es
+    push ax
 
     ; 라인수 계산하기
     mov dl, byte [bp+10]
@@ -88,8 +89,9 @@ _print_byte_dump:
 
     jmp .for_loop
 .for_end:
+    pop ax
+    mov es, ax
     popa
-
     mov sp, bp
     pop bp
     ret 8

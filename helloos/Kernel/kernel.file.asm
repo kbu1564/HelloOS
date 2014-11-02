@@ -6,7 +6,7 @@ ReservedSectors		 equ 0x7C03 + 11
 TotalFATs			 equ 0x7C03 + 13
 BigSectorsPerFAT	 equ 0x7C03 + 33
 BootDiskNumber		 equ 0x7C03 + 61
-ClusterBinaryData	 equ 0x4000
+ClusterBinaryData	 equ 0x6000
 DiskAddressPacket	 equ 0x5000
 ; File Allocation Table
 FileName             equ 0x00
@@ -35,6 +35,24 @@ _load_library:
 	mov bp, sp
     pusha
 
+    ;mov word [0x5310], es
+    ;mov word [0x5312], ds
+    ;mov word [0x5314], fs
+    ;mov word [0x5316], gs
+    ;mov word [0x5318], ss
+    ;mov word [0x531a], ax
+    ;mov word [0x531c], bx
+    ;mov word [0x531e], cx
+    ;mov word [0x5320], dx
+    ;mov word [0x5322], si
+    ;mov word [0x5324], di
+    ;push 10
+    ;push 0
+    ;push 22
+    ;push 0x5310
+    ;call _print_byte_dump
+    ;jmp $
+
     ;---------------------------------------
     ; function's parameters
     ;---------------------------------------
@@ -51,6 +69,7 @@ _load_library:
     ; segment address
     ;---------------------------------------
 
+    xor eax, eax
     mov al, byte [TotalFATs]
     ; FAT 의 개수 구하기
 
@@ -72,7 +91,8 @@ _load_library:
     ; 1클러스터 당 섹터 수
 
     ; RootDirectoryEntry는 1클러스터 단위로 존재
-    mov word [DiskAddressPacket], 0x0010
+    mov word [DiskAddressPacket], 16
+    ; 64bit 주소까지 
     mov word [DiskAddressPacket + 2], cx
     ; 읽어들일 섹터 수 : 1 cluster
     mov word [DiskAddressPacket + 4], ClusterBinaryData
@@ -81,6 +101,7 @@ _load_library:
     mov dword [DiskAddressPacket + 8], eax
     ; 읽을 섹터의 위치
 
+    xor ax, ax
     mov si, DiskAddressPacket
     mov ah, 0x42
     mov dl, byte [BootDiskNumber]
@@ -115,7 +136,7 @@ _load_library:
 	; LFE의 첫번째 바이트에서 7번째 비트가 1 인 경우
 	; LFE의 마지막 엔트리이다.
 
-	mov byte [bp + nLongEntry], al
+	mov byte [bp - nLongEntry], al
 	; si = al * 0x20
 	mov cl, 0x20
 	mul cl
@@ -126,12 +147,16 @@ _load_library:
     mov word [pTempFileEntry], si
 
 	xor cx, cx
-	mov cl, byte [bp + nLongEntry]
+	mov cl, byte [bp - nLongEntry]
 	xor ax, ax
 
-	mov word [bp + nLongEntry], si
+	mov word [bp - nLongEntry], si
 	push bp
 	; LFE 다음 Entry Offset 저장
+
+    ; 여기에서의 인터럽트는 작동을 잘한다..
+    ; 그럼 아래에서 무언가가 0x0000 ~ 0x03ff 번지에 영향을 끼친다는 소리가 된다.
+
 	.lname:
 		sub si, 0x20
 
@@ -139,7 +164,7 @@ _load_library:
 		mov ax, 5
 		.L1:
 			mov dx, word [di + FirstLongFileName]
-			mov word [bp + szFileName], dx
+			mov word [bp - szFileName], dx
 
 			cmp dx, 0xFFFF
 			je .ENDL1
@@ -156,7 +181,7 @@ _load_library:
 		mov ax, 6
 		.L2:
 			mov dx, word [di + SecondLongFileName]
-			mov byte [bp + szFileName], dl
+			mov byte [bp - szFileName], dl
 
 			cmp dx, 0xFFFF
 			je .ENDL2
@@ -173,7 +198,7 @@ _load_library:
 		mov ax, 2
 		.L3:
 			mov dx, word [di + ThirdLongFileName]
-			mov byte [bp + szFileName], dl
+			mov byte [bp - szFileName], dl
 
 			cmp dx, 0xFFFF
 			je .ENDL3
@@ -189,6 +214,11 @@ _load_library:
 		loop .lname
 
 	pop bp
+    ; 이 시점을 기준으로 인터럽트의 작동이 비정상 적으로 변한다.
+    ; 의심되는 부분은 스택 메모리 부분이다.
+    ;
+    ; 해결 완료!!
+    ; 문제는 위의 소스 코드에서 real mode idt 부분의 메모리를 참조하는 것에 있었다.
 
 	pop di
 	push word [bp + nLongEntry]
@@ -212,7 +242,7 @@ _load_library:
 	mov cx, 8
     mov si, di
     mov di, bp
-    add di, szFileName
+    sub di, szFileName
     call _back_trim
 
     add di, ax
@@ -227,17 +257,19 @@ _load_library:
     call _back_trim
 .print:
     mov di, bp
-    add di, szFileName
+    sub di, szFileName
 
     ; 인자로 보낸 파일명과 일치하는 파일이 존재하는지 체크
     mov si, word [szSearachFileName]
     call _strcmp
-    ; 이 비교 루틴이 정상 작동 안한다!!!
+    ; 함수 작동 루틴 수정 완료
+    ; 2014.10.23 - 정상 작동
 
     ; 검색하려는 파일이 존재하지 않은 경우 다음 영역 검색
     test ax, ax
     jnz .notfound
 .search_data:
+    pop di
     ; 찾고자 하는 파일인 경우
     ; 해당 파일을 발견 하였으므로 원하는 처리를 수행한다.
     ; push bx
@@ -273,25 +305,44 @@ _load_library:
     ; 읽어들일 섹터 수 : 1 cluster(임시)
     ;------------------------------------------------
 
-    mov dx, word [pLoadAddress]
-    mov word [DiskAddressPacket + 4], dx
+    ;mov dx, word [pLoadAddress]
+    ;mov word [DiskAddressPacket + 4], dx
     ; 읽은 데이터를 올릴 data 메모리 위치
 
-    mov dx, word [pLoadAddress + 2]
-    mov word [DiskAddressPacket + 6], dx
+    ;mov dx, word [pLoadAddress + 2]
+    ;mov word [DiskAddressPacket + 6], dx
     ; 읽은 데이터를 올릴 segment 메모리 위치
 
-    ; segment init
-    xor ax, ax
-    mov ds, ax
+    ;-----------------------------------------------
+    mov edx, dword [pLoadAddress]
+    mov dword [DiskAddressPacket + 4], edx
+    ; 읽은 데이터를 올릴 data 메모리 위치
+    ; word 단위로 2번쪼개서 넣는거랑 위 구문이랑 같다.
+    ;-----------------------------------------------
 
+    xor eax, eax
     mov si, DiskAddressPacket
     mov ah, 0x42
     mov dl, byte [BootDiskNumber]
     int 0x13
     ; 2014.10.24 - 알수 없는 문제 발생!!
     ; DAP 에는 문제 없지만 int 0x13에서 읽히지 않음
-    jnc .find_to_end
+    ; 2014.11.02 - 해결!!
+    ; C에서는 로컬변수의 경우 스택공간에 빼는 형식으로 구현되는데 이를 더함으로써
+    ; Overflow가 되면서 0번지를 참조하게 되는 문제점이 존재 하였다.
+
+    jnc .error_or_end
+    ; 2014.10.24 1) StackPointer 상의 문제는 없는것 같음
+    ; 2014.10.25 2) 함수 초기 부분에 int 0x10 호출후에
+    ;               함수의 정지현상은 멈추었지만 올바른 작동X
+    ; 2014.11.02 3) 이 부분에서는 다른 인터럽트도 작동이 되지 않는다.
+    ;               flags register를 점검하여 IF 플래그를 체크하였지만 정상
+    ; 해결 완료!!
+    ; 원인 : Real Mode 에서의 IDT는 0 ~ 0x3ff 까지이다.
+    ;        또한 스택에 값을 저장할 시 초기값이 0xffff 인 상태임에도 불구하고
+    ;        100이상의 크기를 요구하는 local variables 의 메모리 위치를 더함으로써
+    ;        Overflow 가 발생하여 스택공간이 0 번지를 참조함으로써 최종적으로 IDT를 수정
+    ;        하게 되는 것 이였다.
 
     ; 만약 이 주석부분으로 제어가 넘어온다면
     ; 데이터 로드에 실패한 것이다.
@@ -302,9 +353,6 @@ _load_library:
     ; 다음 파일 엔트리 검색
     add di, 0x20
     jmp .read
-.find_to_end:
-    ; 파일의 데이터를 발견한 경우 종료
-    pop di
 .error_or_end:
     ; 오류 혹은 기타 상황에 의해 종료
     popa
