@@ -14,20 +14,21 @@ REMOVE = 'del'
 # 복사 명령어
 CP = 'copy'
 # 설치할 USB 드라이브 이름
-DRIVE_NUMBER = E
+DRIVE_NUMBER = E:
 
 # 운영체제 버전별 명령어 셋팅
-OS_DETECTING = $(shell uname -s)
+OS_DETECTING = $(shell uname -o)
 
-ifeq ($(OS_DETECTING),MINGW32_NT-6.1)
+ifeq ($(OS_DETECTING), Cygwin)
 	REMOVE := 'rm'
 	CP := 'cp'
+	DRIVE_NUMBER := /cygdrive/e
 endif
 
 INCLUDE_OPTIONS = REMOVE=$(REMOVE) CP=$(CP)
 x86_64_RUN = qemu-system-x86_64 -m 512 -hdb $(DRIVE_NUMBER): -localtime -M pc
 
-all: compile clean
+all: compile clean writer
 
 # 부트로더 및 커널 컴파일 수행
 compile:
@@ -41,8 +42,10 @@ bootwriter:
 
 # 커널 파일 설치
 writer:
-	@$(REMOVE) $(DRIVE_NUMBER):\kernel.sys
-	$(CP) $(IMAGE_DIR)\kernel.sys $(DRIVE_NUMBER):\kernel.sys
+	@$(REMOVE) $(DRIVE_NUMBER)/kernel.sys
+	@$(REMOVE) $(DRIVE_NUMBER)/kernel.protectmode.sys
+	$(CP) $(IMAGE_DIR)/kernel.sys $(DRIVE_NUMBER)/kernel.sys
+	$(CP) $(IMAGE_DIR)/kernel.protectmode.sys $(DRIVE_NUMBER)/kernel.protectmode.sys
 
 # 설치 된 내용을 바탕으로 실행
 run:

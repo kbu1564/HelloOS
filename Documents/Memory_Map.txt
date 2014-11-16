@@ -28,7 +28,9 @@ HelloOS Memory Map (64MiB)
 ├───────────────────────────────────────┤ 0x00100000
 │────── Don't used reserved area ───────│
 ├───────────────────────────────────────┤ 0x0007FFFF
-│ 32bit Kernel Code Area                │ Size: 479KiB
+│ File System Cluster Cache             │ Size: 64KiB
+├───────────────────────────────────────┤ 0x00070000
+│ 32bit Kernel Code Area                │ Size: 415KiB
 ├───────────────────────────────────────┤ 0x00008000
 │ VGA Infomation                        │
 ├───────────────────────────────────────┤ 0x00007E00
