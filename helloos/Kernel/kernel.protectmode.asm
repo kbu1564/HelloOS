@@ -156,10 +156,10 @@ _protect_entry:
     push VbeSupportVersionMessage
     call _print32
 
-    mov ax, word [0x7E00 + 0x4]
+    mov ax, word [VbeVersion]
     and ax, 0x0200
     xor ax, 0x0200
-    mov dx, 0x004F
+    mov dx, VbeInfoLoadError
     xor dx, word [VbeInfoState]
     add ax, dx
     ; vbe 2.0, 3.0인 경우
@@ -173,7 +173,7 @@ _protect_entry:
     push 4
     push 36
     push 2
-    push 0x7E00 + 0x4
+    push VbeVersion
     call _print_byte_dump32
     ; vbe를 2.0 이상 지원하는 경우
     ; 지원하는 vbe 버전을 출력
@@ -196,9 +196,9 @@ _protect_entry:
 ;   ; 여러가지 인터럽트 예외를 강제적으로 발생시킨다.
 ;   ;-------------------------------------------------------------
 ;   ; devide error!!
-;    mov eax, 10
-;    mov ecx, 0
-;    div ecx
+;   mov eax, 10
+;   mov ecx, 0
+;   div ecx
 
 ;   ;-----------------------------------------------------------------------
 ;   ; 0xF0000000의 논리 주소를 0x01000000의 물리 메모리 주소로 Mapping
@@ -212,7 +212,7 @@ _protect_entry:
 ;   ; page fault!!
 ;   mov ecx, 0x12345678
 ;   mov dword [0xF0000000], ecx
-    ;-------------------------------------------------------------
+;   ;-------------------------------------------------------------
 
 ;   push 0xE0000000
 ;   push 0x00900000
