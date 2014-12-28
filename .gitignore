@@ -1,1 +1,7 @@
-helloos/Image/*
+# build file
+*.img
+*.sys
+
+# project etc files
+*.opensdf
+*.sdf

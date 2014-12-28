@@ -15,10 +15,11 @@ _entry:
 
     %include "../Bootloader/loader.print.asm"
     %include "../Bootloader/loader.debug.dump.asm"
-    %include "../Bootloader/loader.library.string.asm"
     ; 기본 라이브러리의 경우 부트로더쪽의 함수를 그대로 가져와 사용한다.
 
     ; Kernel Library
+    %include "kernel.library.string.asm"
+    ; string library
     %include "kernel.vbe.asm"
     %include "kernel.vbe.header.asm"
     ; Vedio BIOS Extension Library
@@ -65,6 +66,18 @@ _start:
     call _get_vbe_info
     ; load graphics information(vbe)
 
+    test byte [VbeGraphicModeStart], 0x01
+    jz .skip_graphic_mode
+    ; 그래픽 모드로 시작하는 경우가 아니라면
+    ; 그래픽 전환 작업을 하지 않는다.
+
+    mov cx, VbeMode.1024x768x16@64
+    call _get_vbe_mode_info
+
+    mov bx, VbeMode.1024x768x16@64
+    call _set_vbe_mode
+
+.skip_graphic_mode:
     cli
     ; 이 부분에서 32bit Protected Mode 로 전환할 준비를 한다.
 
