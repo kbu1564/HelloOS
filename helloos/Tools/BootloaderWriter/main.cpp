@@ -1,152 +1,125 @@
-#include <Windows.h>
-#include <stdio.h>
-#include <iostream>
-#include <string>
+#include "dapi\dapi_engine.h"
+#include "dapi\dapi_usb.h"
 
 // 개발자 전용
 using namespace std;
-
-const int FILE_SHARE_VALID_FLAGS = FILE_SHARE_WRITE | FILE_SHARE_READ;
-const int SECTORSIZE = 512;
-
-short ReadSector(const char* _dsk, BYTE* &_buff, UINT _nsect)
-{
-	DWORD dwRead = 0;
-	HANDLE hDisk = NULL;
-
-	hDisk = CreateFile(_dsk, GENERIC_WRITE | GENERIC_READ, FILE_SHARE_VALID_FLAGS, 0, OPEN_EXISTING, 0, 0);
-	if (hDisk == INVALID_HANDLE_VALUE)
-	{
-		cout << "`" << _dsk << "` is INVALID_HANDLE_VALUE!!" << endl;
-		CloseHandle(hDisk);
-
-		return 1;
-	}
-	if (SetFilePointer(hDisk, _nsect * SECTORSIZE, 0, FILE_BEGIN) != INVALID_SET_FILE_POINTER)
-	{
-		if (ReadFile(hDisk, _buff, SECTORSIZE, &dwRead, 0) == FALSE)
-		{
-			int _errno = GetLastError();
-			if (_errno == 5)
-				cout << "ReadSector Denied Access!!" << endl;
-			else
-			{
-				printf("ReadSector Error: %d\n", _errno);
-			}
-		}
-	}
-	CloseHandle(hDisk);
-
-	return 0;
-}
-
-short WriteSector(const char* _dsk, BYTE* _buff, UINT _nsect)
-{
-	DWORD dwWrite = 0;
-	HANDLE hDisk = NULL;
-
-	hDisk = CreateFile(_dsk, GENERIC_WRITE | GENERIC_READ, FILE_SHARE_VALID_FLAGS, 0, OPEN_EXISTING, 0, 0);
-	if (hDisk == INVALID_HANDLE_VALUE)
-	{
-		cout << "`" << _dsk << "` is INVALID_HANDLE_VALUE!!" << endl;
-		CloseHandle(hDisk);
-
-		return 1;
-	}
-	if (SetFilePointer(hDisk, _nsect * SECTORSIZE, 0, FILE_BEGIN) != INVALID_SET_FILE_POINTER)
-	{
-		if (WriteFile(hDisk, _buff, SECTORSIZE, &dwWrite, 0) == FALSE)
-		{
-			int _errno = GetLastError();
-			if (_errno == 5)
-				cout << "WriteSector Denied Access!!" << endl;
-			else
-			{
-				printf("WriteSector Error: %d\n", _errno);
-			}
-		}
-		else
-		{
-			cout << "WriteSector Success!!" << endl;
-		}
-	}
-	CloseHandle(hDisk);
-
-	return 0;
-}
+using namespace DAPI;
 
 int main(int argc, char* argv[])
 {
-	char yesno = 'Y';
-	string strDriveNumber, strFilePath;
-	string strDisk = "\\\\.\\PhysicalDrive";
+	LPDAPI_DEVICE dDev;
+	LPDAPI_FONT dFont;
+	DAPI_InitlizeObject(&dDev);
+	DAPI_InitlizeObject(&dFont);
 
-	// 드라이브 번호 읽기
-	if (argc == 1)
+	int nDevHandle = dDev->CreateDevice(L"HelloOS Install", 450, 220, 0, 0);
+	int nVerdana = dFont->LoadFont(L"Verdana", 15, FW_NORMAL);
+	int nVerdanaBold = dFont->LoadFont(L"Verdana", 13, FW_BOLD);
+	int nVerdanaBig = dFont->LoadFont(L"Verdana", 22, FW_BOLD);
+
+	const int MBR_CODE_LENGTH = 512;
+
+	while (dDev->Run(nDevHandle))
 	{
-		cout << "주의 ! : USB의 최소 용량이 16GB이어야 하며 포벳된 상태 이어야 합니다" << endl;
-		cout << "USB DriverNumber: ";
-		cin >> strDriveNumber;
-		cout << "USB Install FilePath: ";
-		cin >> strFilePath;
-	}
-	else
-	{
-		strDriveNumber = argv[1];
-		strFilePath = argv[2];
-	}
-
-	if (strDriveNumber.compare("0") == 0)
-	{
-		cout << "주의 !" << endl;
-		cout << "해당 드라이브는 로컬 HDD 이므로 부트로더 업로드시" << endl;
-		cout << "부팅이 불가능 할 수 있습니다." << endl << endl;
-
-		cout << "작업을 계속 진행 하시겠습니까?(Y/n): ";
-		cin >> yesno;
-	}
-
-	if (yesno == 'Y')
-	{
-		// 드라이브 셋팅
-		strDisk += strDriveNumber;
-		strDisk = "\\\\.\\E:";
-
-		// 설치 파일 읽어들이기
-		FILE* fp = NULL;
-		int _errno = fopen_s(&fp, strFilePath.c_str(), "rb");
-		if (_errno == 0)
+		if (dDev->BeginScene(nDevHandle))
 		{
-			BYTE* sectorData = new BYTE[SECTORSIZE];
+			dFont->Text(nDevHandle, nVerdana, L"Welcome to HelloOS installer!", 10, 10);
+			dFont->Text(nDevHandle, nVerdana, L"설치할 USB가 인식될 경우 아래 목록에 표시 됩니다.", 10, 30, RGB(0x99, 0x99, 0x99));
+			dFont->Text(nDevHandle, nVerdana, L"8GB or 16GB USB만 설치가 가능합니다.", 10, 50, RGB(0x99, 0x99, 0x99));
 
-			fread_s(sectorData, sizeof(BYTE)* SECTORSIZE, SECTORSIZE, 1, fp);
-			fclose(fp);
-
-			// Bootloader 체크
-			if (sectorData[510] == 0x55 && sectorData[511] == 0xAA)
+			DWORD dwDevices = GetLogicalDrives();
+			for (int i = 0, lineNumber = 3; i < 32; i++)
 			{
-				cout << "Bootloader Checking OK!!" << endl;
-				// Bootloader Read!!
-				WriteSector(strDisk.c_str(), sectorData, 0);
-				//WriteSector(strDisk.c_str(), sectorData, 6);
-			}
-			else
-			{
-				// Bootloader 가 아닌경우 설치를 실패시킨다.
-				cout << "Bootloader Install Failure!!" << endl;
-				cout << "`" << strFilePath << "` is Not Bootloader!!" << endl;
+				DWORD dwComp = (1 << i);
+				if (dwDevices & dwComp)
+				{
+					string driveString = (char)('A' + i) + (string)":";
+					UsbLibrary usb(driveString);
+
+					string strBuffer = "";
+					wstring convertString = L"";
+					if (usb.isVolumeDevice() && usb.isUsbDevice())
+					{
+						int line = 10 + lineNumber * 25;
+
+						// Drive 할당 알파벳 구하기
+						strBuffer = driveString + "\\";
+						convertString.assign(strBuffer.begin(), strBuffer.end());
+						dFont->Text(nDevHandle, nVerdanaBold, convertString.c_str(), 10, line, RGB(0xFF, 0x00, 0x00));
+
+						// 드라이브 용량
+						char szDriveSize[10] = { 0, };
+						long long nDriveSizeOfGB = usb.getDeviceSize() / 1000 / 1000 / 1000;
+						sprintf_s(szDriveSize, "%d GB", nDriveSizeOfGB);
+						// 드라이브 라벨 이름
+						strBuffer = usb.getVolumeLabel() + "(" + szDriveSize + ")";
+						convertString.assign(strBuffer.begin(), strBuffer.end());
+						convertString = convertString;
+						dFont->Text(nDevHandle, nVerdanaBold, convertString.c_str(), 40, line);
+
+						// 드라이브 파일시스템 이름
+						strBuffer = usb.getFileSystemLabel();
+						convertString.assign(strBuffer.begin(), strBuffer.end());
+						convertString = convertString;
+						dFont->Text(nDevHandle, nVerdanaBold, convertString.c_str(), 210, line);
+
+						// 16GB or 8GB USB에만 설치 버튼 생성
+						if (nDriveSizeOfGB == 16 || nDriveSizeOfGB == 8)
+						{
+							RECT rectEvent = { 0, };
+							COLORREF colorButtonBg = RGB(0x11, 0x99, 0x00);
+							ifstream mbrImage("./loader.img", ios_base::binary);
+							
+							// 마우스 이벤트 영역 설정
+							rectEvent.top = line - 3;
+							rectEvent.bottom = line + 19;
+							rectEvent.left = 280;
+							rectEvent.right = 338;
+
+							if (!mbrImage.fail())
+							{
+								// 마우스 오버시
+								if (dDev->IsMouseOver(&rectEvent))
+								{
+									colorButtonBg = RGB(0x44, 0xCC, 0x00);
+								}
+								// 마우스 클릭시
+								if (dDev->IsMouseClick(&rectEvent))
+								{
+									colorButtonBg = RGB(0xAA, 0xFF, 0x00);
+								}
+								// 마우스 클릭시 단한번 발생
+								if (dDev->IsMouseClickOnce(&rectEvent))
+								{
+									BYTE* installMBR = new BYTE[MBR_CODE_LENGTH]();
+									mbrImage.read((char*)installMBR, MBR_CODE_LENGTH);
+
+									bool bInstalled = usb.writeMasterBootRecord((fat_extBS_32_t*)installMBR);
+									cout << usb.getVolumeLabel().c_str() << "(" << nDriveSizeOfGB << ")" << endl;
+									cout << "Master Boot Record : Install [" << ((bInstalled) ? "true" : "false") << "]" << endl;
+
+									delete[] installMBR;
+								}
+
+								dFont->Text(nDevHandle, nVerdanaBig, L"         ", rectEvent.left + 1, rectEvent.top + 1, RGB(0xFF, 0xFF, 0xFF), RGB(0xFF, 0xFF, 0xFF));
+								dFont->Text(nDevHandle, nVerdanaBig, L"         ", rectEvent.left, rectEvent.top, RGB(0xFF, 0xFF, 0xFF), colorButtonBg);
+								dFont->Text(nDevHandle, nVerdanaBold, L"Install", rectEvent.left + 5, rectEvent.top + 3, RGB(0xFF, 0xFF, 0xFF), colorButtonBg);
+							}
+							else
+							{
+								dFont->Text(nDevHandle, nVerdanaBold, L"Can't ImageFile", rectEvent.left + 5, rectEvent.top + 3, RGB(0xFF, 0xFF, 0xFF));
+							}
+						}
+						lineNumber++;
+					}
+				}
 			}
 
-			delete[] sectorData;
-		}
-		else
-		{
-			cout << "`" << strFilePath << "` is not exists!!" << endl;
+			dDev->EndScene(nDevHandle);
 		}
 	}
-	else
-	{
-		cout << "작업을 취소합니다." << endl;
-	}
+
+	// release
+	DAPI_DeleteObject();
 	return 0;
 }
