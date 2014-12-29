@@ -139,7 +139,7 @@ _kernel_init_paging:
     push 0x00900000
     push eax
     call _kernel_alloc
-.enable_paging
+.enable_paging:
     mov eax, dword [PageDirectory]
     mov cr3, eax
     ; 페이지 디렉토리 시작 주소를 등록
