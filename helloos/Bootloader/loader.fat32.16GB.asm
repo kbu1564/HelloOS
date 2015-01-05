@@ -1,4 +1,4 @@
-OEM_ID:             db "HELLO-OS"
+OEM_ID:             db "HELLOOS "
 BytesPerSector:     dw 0x0200
 SectorsPerCluster:  db 0x08
 ReservedSectors:    dw 0x11B2
@@ -26,5 +26,5 @@ BootDiskNumber:     db 0x80
 Reserved4:          db 0
 Signature:          db 0x29
 VolumeID:           dd 0xFFFFFFFF
-VolumeLabel:        db "Hello OS.v0"
+VolumeLabel:        db "OSUSB      "
 SystemID:           db "FAT32   "

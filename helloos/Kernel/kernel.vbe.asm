@@ -1,3 +1,13 @@
+; si : x resolution
+; di : y resolution
+; cx : pixels
+_get_vbe_mode:
+	; register backup
+	;push si
+	;push di
+	;push cx
+	ret
+
 _get_vbe_info:
 	mov ax, 0
 	mov es, ax

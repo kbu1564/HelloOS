@@ -126,6 +126,11 @@ _load_library:
     ; 긴 파일 이름 얻기
     mov bp, sp
 
+	push 0
+    push 0x04
+    push KernelProtectModeLoadingFail
+    call _print
+
     mov al, byte [di + FileName]
     test al, 0x40
     jz .lname
@@ -213,6 +218,11 @@ _load_library:
 
         loop .lname
 
+	push 1
+    push 0x04
+    push KernelProtectModeLoadingFail
+    call _print
+
     pop bp
     ; 이 시점을 기준으로 인터럽트의 작동이 비정상 적으로 변한다.
     ; 의심되는 부분은 스택 메모리 부분이다.
@@ -268,11 +278,16 @@ _load_library:
     ; 함수 작동 루틴 수정 완료
     ; 2014.10.23 - 정상 작동
 
-    ; 검색하려는 파일이 존재하지 않은 경우 다음 영역 검색
+ 	push 2
+    push 0x04
+    push KernelProtectModeLoadingFail
+    call _print
+
+   ; 검색하려는 파일이 존재하지 않은 경우 다음 영역 검색
     test ax, ax
     jnz .notfound
 .search_data:
-    pop di
+   	pop di
     ; 찾고자 하는 파일인 경우
     ; 해당 파일을 발견 하였으므로 원하는 처리를 수행한다.
     mov di, word [pTempFileEntry]

@@ -1,3 +1,6 @@
+####################################################################
+# 사용자 환경 설정 부분
+####################################################################
 # Makefile
 # OS소스를 컴파일하여 최종 이미지 파일을 생성하기 위한 Makefile
 MAKE_OPTION = .
@@ -9,53 +12,73 @@ BOOTLOADER_DIR = Bootloader
 KERNEL_DIR = Kernel
 # 생성된 이미지 파일이 저장된 경로
 IMAGE_DIR = Image
-# 삭제 명령어
-REMOVE = 'del'
-# 복사 명령어
-CP = 'copy'
-# 설치할 USB 드라이브 이름
+# 설치할 USB 드라이브 Label 이름
 DRIVE_NUMBER = OSUSB
 # DISK USB 장치 디바이스 경로 명
 DRIVE_NUMBER_DEV = /dev/disk3
+# 가상머신VirtualBox vbox 파일 경로
+VBOX_RUN_PATH = ~/VirtualBox\ VMs/HelloOS/HelloOS.vbox
+# 실행할 가상머신 종류 설정
+# virtualbox - Virtualbox로 실행
+# qemu - qemu로 실행
+#KIND_OF_VM = qemu
+KIND_OF_VM = virtualbox
+
+# 삭제 명령어
+REMOVE = rm
+# 복사 명령어
+CP = cp
 # 관리자 권한
 SUDO = sudo
 # 컴파일 명령어 출력 관련
 Q = @
 
+#####################################################################
+# Makefile 을 이용한 환경 셋팅값 적용 부분
+#####################################################################
 # 운영체제 버전별 명령어 셋팅
 OS_DETECTING = $(shell uname -s)
+# 실행 전 디바이스 접근을 위한 권한 변경
+DRIVE_PERMISSION_RUN = $(Q)$(SUDO) chmod 777 $(DRIVE_NUMBER_DEV)
 # 실행전 언마운트 작업이 필요한 경우의 처리 명령어
-DRIVE_BUSY_RUN = $(Q)$(SUDO) diskutil unmountDisk $(DRIVE_NUMBER_DEV)
+DRIVE_UNBUSY_RUN = $(Q)$(SUDO) diskutil unmountDisk $(DRIVE_NUMBER_DEV)
+DRIVE_BUSY_RUN = $(Q)$(SUDO) diskutil mount $(DRIVE_NUMBER_DEV)
+# QEMU를 이용한 가상 운영체제 시뮬레이션 실행
+x86_64_RUN = qemu-system-x86_64 -m 64 -hda $(DRIVE_NUMBER_DEV) -localtime -M pc -boot menu=on -net none
+# VirtualBox를 이용한 실행
+VBOX_RUN = virtualbox --startvm $(VBOX_RUN_PATH)
+# bootloader (mbr area) 설치
+BOOTLOADER_INSTALLER = $(SUDO) dd if=$(IMAGE_DIR)/loader.img of=$(DRIVE_NUMBER_DEV) bs=512
 
+# virtual machine choice
+ifeq ($(KIND_OF_VM), virtualbox)
+	VM_RUN = $(SUDO) $(VBOX_RUN)
+else
+	VM_RUN = $(SUDO) $(x86_64_RUN)
+endif
 # window cygwin
 ifeq ($(OS_DETECTING), Cygwin)
-	REMOVE := 'rm'
-	CP := 'cp'
 	DRIVE_NUMBER := /cygdrive/e
 	DRIVE_NUMBER_DEV :=
 	DRIVE_BUSY_RUN :=
+	DRIVE_PERMISSION_RUN :=
 	SUDO := 
+	BOOTLOADER_INSTALLER :=
 else
 # mac darwin
 ifeq ($(OS_DETECTING), Darwin)
-	REMOVE := 'rm'
-	CP := 'cp'
 	# 임시 값
 	DRIVE_NUMBER := /Volumes/$(DRIVE_NUMBER)
-	DRIVE_NUMBER_DEV := /dev/rdisk3
 else
 	# no Cygwin window or Ubuntu or fedora ...
-	REMOVE := 'rm'
-	CP := 'cp'
-
 	DRIVE_NUMBER := /media/wook/$(DRIVE_NUMBER)
 	DRIVE_NUMBER_DEV := /dev/sdb1
 	DRIVE_BUSY_RUN :=
+	DRIVE_PERMISSION_RUN :=
 endif
 endif
 
 INCLUDE_OPTIONS = REMOVE=$(REMOVE) CP=$(CP)
-x86_64_RUN = qemu-system-x86_64 -m 64 -hda $(DRIVE_NUMBER_DEV) -net none -localtime -M pc
 
 all: compile clean writer
 
@@ -66,18 +89,21 @@ compile:
 
 # 부트로더 설치 작업 수행 및
 # 1 섹터에 loader.img Bootloader Write
-#bootwriter:
-#	$(Q)$(BOOTLOADER_INSTALLER) 1 $(IMAGE_DIR)\loader.img
+bootwriter:
+	$(DRIVE_BUSY_RUN)
+	$(BOOTLOADER_INSTALLER)
 
 # 커널 파일 설치
 writer:
 	$(CP) $(IMAGE_DIR)/kernel.sys $(DRIVE_NUMBER)/kernel.sys
 	$(CP) $(IMAGE_DIR)/kernel.protectmode.sys $(DRIVE_NUMBER)/kernel.protectmode.sys
-
+	
 # 설치 된 내용을 바탕으로 실행
 run:
+	$(DRIVE_PERMISSION_RUN)
+	$(DRIVE_UNBUSY_RUN)
+	$(VM_RUN)
 	$(DRIVE_BUSY_RUN)
-	$(SUDO) $(x86_64_RUN)
 
 # 기존의 설치 본 전부 제거
 clean:
