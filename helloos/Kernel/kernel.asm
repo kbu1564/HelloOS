@@ -58,6 +58,13 @@ _start:
     call _load_library
     ; ProtectedMode Kernel File Loading
 
+	push 10
+	push 0
+	push 4
+	push KernelProtectModeMemoryArea
+	call _print_byte_dump
+	jmp $
+
     mov cl, byte [KernelProtectModeMemoryArea + 2]
     cmp cl, 0x90
     jne .error_loader
@@ -71,10 +78,10 @@ _start:
     ; 그래픽 모드로 시작하는 경우가 아니라면
     ; 그래픽 전환 작업을 하지 않는다.
 
-    mov cx, VbeMode.1024x768x16@64
+    mov cx, VbeMode.1024x768x16@32
     call _get_vbe_mode_info
 
-    mov bx, VbeMode.1024x768x16@64
+    mov bx, VbeMode.1024x768x16@32
     call _set_vbe_mode
 
 .skip_graphic_mode:

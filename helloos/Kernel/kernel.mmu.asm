@@ -135,11 +135,11 @@ _kernel_init_paging:
     mov ecx, 0x1000
     div ecx
     ; 4KiB 단위로 필요한 용량 표현
-    push dword [PhysicalBasePointer]
-    push 0x00900000
-    push eax
-    call _kernel_alloc
-.enable_paging
+    ;push dword [PhysicalBasePointer]
+    ;push 0x00900000
+    ;push eax
+    ;call _kernel_alloc
+.enable_paging:
     mov eax, dword [PageDirectory]
     mov cr3, eax
     ; 페이지 디렉토리 시작 주소를 등록
