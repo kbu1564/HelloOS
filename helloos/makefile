@@ -21,8 +21,8 @@ VBOX_RUN_PATH = ~/VirtualBox\ VMs/HelloOS/HelloOS.vbox
 # 실행할 가상머신 종류 설정
 # virtualbox - Virtualbox로 실행
 # qemu - qemu로 실행
-#KIND_OF_VM = qemu
-KIND_OF_VM = virtualbox
+KIND_OF_VM = qemu
+#KIND_OF_VM = virtualbox
 
 # 삭제 명령어
 REMOVE = rm
@@ -44,38 +44,39 @@ DRIVE_PERMISSION_RUN = $(Q)$(SUDO) chmod 777 $(DRIVE_NUMBER_DEV)
 DRIVE_UNBUSY_RUN = $(Q)$(SUDO) diskutil unmountDisk $(DRIVE_NUMBER_DEV)
 DRIVE_BUSY_RUN = $(Q)$(SUDO) diskutil mount $(DRIVE_NUMBER_DEV)
 # QEMU를 이용한 가상 운영체제 시뮬레이션 실행
-x86_64_RUN = qemu-system-x86_64 -m 64 -hda $(DRIVE_NUMBER_DEV) -localtime -M pc -boot menu=on -net none
+x86_64_RUN = qemu-system-x86_64 -m 64 -hda $(DRIVE_NUMBER_DEV) -localtime -M pc -net none
 # VirtualBox를 이용한 실행
 VBOX_RUN = virtualbox --startvm $(VBOX_RUN_PATH)
 # bootloader (mbr area) 설치
 BOOTLOADER_INSTALLER = $(SUDO) dd if=$(IMAGE_DIR)/loader.img of=$(DRIVE_NUMBER_DEV) bs=512
+
+# mac darwin
+ifeq ($(OS_DETECTING), Darwin)
+	# 임시 값
+	DRIVE_NUMBER := /Volumes/$(DRIVE_NUMBER)
+else
+    # no Cygwin window or Ubuntu or fedora ...
+    ifeq ($(OS_DETECTING), Linux)
+        DRIVE_NUMBER := /media/wook/$(DRIVE_NUMBER)
+        DRIVE_NUMBER_DEV := /dev/sdb1
+        DRIVE_BUSY_RUN :=
+        DRIVE_PERMISSION_RUN :=
+    else
+        # window cygwin
+        DRIVE_NUMBER := /cygdrive/e
+        DRIVE_NUMBER_DEV := E:
+        DRIVE_BUSY_RUN :=
+        DRIVE_UNBUSY_RUN :=
+        DRIVE_PERMISSION_RUN :=
+        SUDO := 
+    endif
+endif
 
 # virtual machine choice
 ifeq ($(KIND_OF_VM), virtualbox)
 	VM_RUN = $(SUDO) $(VBOX_RUN)
 else
 	VM_RUN = $(SUDO) $(x86_64_RUN)
-endif
-# window cygwin
-ifeq ($(OS_DETECTING), Cygwin)
-	DRIVE_NUMBER := /cygdrive/e
-	DRIVE_NUMBER_DEV :=
-	DRIVE_BUSY_RUN :=
-	DRIVE_PERMISSION_RUN :=
-	SUDO := 
-	BOOTLOADER_INSTALLER :=
-else
-# mac darwin
-ifeq ($(OS_DETECTING), Darwin)
-	# 임시 값
-	DRIVE_NUMBER := /Volumes/$(DRIVE_NUMBER)
-else
-	# no Cygwin window or Ubuntu or fedora ...
-	DRIVE_NUMBER := /media/wook/$(DRIVE_NUMBER)
-	DRIVE_NUMBER_DEV := /dev/sdb1
-	DRIVE_BUSY_RUN :=
-	DRIVE_PERMISSION_RUN :=
-endif
 endif
 
 INCLUDE_OPTIONS = REMOVE=$(REMOVE) CP=$(CP)
