@@ -5,7 +5,8 @@ jmp _entry
 nop
 
 ; USB 용량별 BPB 종류
-%include "loader.fat32.8GB.asm"
+%include "loader.fat32.4GB.asm"
+;%include "loader.fat32.8GB.asm"
 ;%include "loader.fat32.16GB.asm"
 
 _entry:
@@ -21,9 +22,11 @@ _entry:
     ; 디스크로 부터 커널 파일을 로드하는 소스 파일
 _start:
     xor ax, ax
+    mov es, ax
     mov ds, ax
     mov ss, ax
-    mov sp, 0xFFFF
+    mov sp, 0xFFFE
+    mov bp, 0xFFFE
     ; 스택 초기화 루틴
 
     mov byte [BootDiskNumber], dl
@@ -38,7 +41,7 @@ _start:
     ; 커널정보로 인식하여 메모리로 데이터를 로드한다
 
     mov ax, word [DAPSegment]
-    mov ds, ax
+    mov es, ax
     mov di, word [DAPOffset]
     ; 로드에 성공한 경우 커널 데이터 메모리 주소를 설정한다
 
@@ -60,7 +63,7 @@ _start:
     hlt
     jmp .end_bootloader
 
-KernelFileName:     db 'KERNEL  ', 'SYS', 0
+KernelFileName:     db 'KERNEL  ', 'SYS'
 ; 로드할 커널 파일의 이름
 ; 확장자 포함
 ; Only 8byte(filename) + Only 3byte(확장자)

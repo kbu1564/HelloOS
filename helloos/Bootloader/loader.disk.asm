@@ -25,11 +25,10 @@
 _disk_load_kernel_data_to_memory:
     push bp
     mov bp, sp
-
     pusha
 
     xor eax, eax
-
+    mov es, ax
     mov al, byte [TotalFATs]
     ; FAT 의 개수 구하기
 
@@ -47,25 +46,20 @@ _disk_load_kernel_data_to_memory:
     add eax, edx
     ; RootDirectory 의 시작 위치 계산
     mov dword [DAPReadSector], eax
-    ; 계산된 RootDirectoryEntry Sector 위치 셋팅
-    mov ax, word [SectorsPerCluster]
-    mov word [DAPReadSectorSize], ax
-    ; 1cluster 단위로 읽기
     ;-----------------------------------------------------------------------------------
 
     mov si, DAP
     mov ah, 0x42
     mov dl, byte [BootDiskNumber]
     int 0x13
-    jc .end
+    jc .error
     ; 오류 발생한 경우 함수 종료
-
     ; 오류 없이 성공적으로 섹터 읽기에 성공한 경우
 .success:
     ; 읽기에 성공하게 되면 메모리에
     ; RootDirectory Sector Data 가 존재하게 된다
     mov ax, word [DAPSegment]
-    mov ds, ax
+    mov es, ax
 
     mov di, word [DAPOffset]
 .loop_remove_check:
@@ -74,7 +68,7 @@ _disk_load_kernel_data_to_memory:
 ; info!) 이 루틴에서 삭제된 파일정보는 건너 뛴다.
 ;-------------------------------------------------
     ; 첫 바이트가 0xE5 인 경우 삭제된 영역
-    mov dl, byte [di]
+    mov dl, byte [es:di]
     cmp dl, 0xE5
     jne .dir_entry_check
     ; 삭제된 파일명인지 체크
@@ -86,10 +80,10 @@ _disk_load_kernel_data_to_memory:
 ;-------------------------------------------------
 .dir_entry_check:
     ; Long Directory Entry Check
-    mov cl, byte [di+11]
+    mov cl, byte [es:di+11]
     cmp cl, 0x0F
     jne .short_dir_entry
-    ;mov cl, byte [di]
+    ;mov cl, byte [es:di]
     ;or cl, 0x40
     ;cmp cl, 0x0F
     ;jne .short_dir_entry
@@ -102,35 +96,38 @@ _disk_load_kernel_data_to_memory:
     ;je .end
     ; 1th ~ Nth loop
     ;dec cl
+    xor cx, cx
+    mov cl, byte [es:di]
+    and cl, 0x0F
+    .jmp_long_dir_entry:
+        add di, 0x20
+        dec cl
+        jnz .jmp_long_dir_entry
 
     add di, 0x20
     jmp .dir_entry_check
 .short_dir_entry:
     ; short dir entry : filename 8byte
-    cmp byte [di], 0
+    cmp byte [es:di], 0
     je .end
 
-    xor ax, ax
     mov si, di
     mov bx, word [bp+4]
 
+    xor ax, ax
 .loop_copy:
-    cmp al, 10
-    je .loop_end
-
-    mov ah, byte [bx]
+    mov ah, byte [ds:bx]
     cmp ah, 0
     je .loop_end
     ; 위 조건이 만족하는 경우
     ; 비교 대상이 NULL 문자가 나온경우
     ; 일치한 문자열을 찾은경우
 
-    cmp ah, byte [si]
+    cmp ah, byte [es:si]
     jne .loop_not_found
 
     inc si
     inc bx
-    inc al
     jmp .loop_copy
 .loop_not_found:
     add di, 0x20
@@ -139,7 +136,7 @@ _disk_load_kernel_data_to_memory:
 .loop_end:
     ; 인자로 받은 파일명과 동일한 파일명인지 체크
 
-    mov al, byte [di+11]
+    mov al, byte [es:di+11]
     and al, 0x20
     cmp al, 0x20
     jne .loop_not_found
@@ -148,7 +145,7 @@ _disk_load_kernel_data_to_memory:
 
     ; 이 부분이 실행이 된다면 커널소스 파일과 동일한 파일을 발견한 경우 이다.
 
-    mov dx, word [di+26]
+    mov dx, word [es:di+26]
     sub dx, 2
     ; RootDirectoryEntry가 2 Cluster 이므로 2를 빼준다
 
@@ -188,7 +185,7 @@ _disk_load_kernel_data_to_memory:
 ; LAB
 ; Disk Address Packet
 DAP:
-                    db 16, 0    ; Size of packet (10h or 18h)
+                    db 0x10, 0    ; Size of packet (10h or 18h)
 DAPReadSectorSize:  dw 8        ; Sectors to read
 DAPOffset:          dw 0x8000   ; Offset
 DAPSegment:         dw 0        ; Segment

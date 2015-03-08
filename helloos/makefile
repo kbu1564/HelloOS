@@ -4,8 +4,6 @@
 # Makefile
 # OS소스를 컴파일하여 최종 이미지 파일을 생성하기 위한 Makefile
 MAKE_OPTION = .
-# 자체 제작한 부트로더를 USB 장치에 Write 하는 프로그램
-#BOOTLOADER_INSTALLER = .\Tools\BootloaderWriter.exe
 # 부트로더 소스 경로
 BOOTLOADER_DIR = Bootloader
 # 커널 소스 경로
@@ -44,7 +42,7 @@ DRIVE_PERMISSION_RUN = $(Q)$(SUDO) chmod 777 $(DRIVE_NUMBER_DEV)
 DRIVE_UNBUSY_RUN = $(Q)$(SUDO) diskutil unmountDisk $(DRIVE_NUMBER_DEV)
 DRIVE_BUSY_RUN = $(Q)$(SUDO) diskutil mount $(DRIVE_NUMBER_DEV)
 # QEMU를 이용한 가상 운영체제 시뮬레이션 실행
-x86_64_RUN = qemu-system-x86_64 -m 64 -hda $(DRIVE_NUMBER_DEV) -localtime -M pc -net none
+x86_64_RUN = qemu-system-x86_64 -m 64 -gdb tcp:127.0.0.1:1234 -hda $(DRIVE_NUMBER_DEV) -localtime -M pc
 # VirtualBox를 이용한 실행
 VBOX_RUN = virtualbox --startvm $(VBOX_RUN_PATH)
 # bootloader (mbr area) 설치
@@ -63,8 +61,8 @@ else
         DRIVE_PERMISSION_RUN :=
     else
         # window cygwin
-        DRIVE_NUMBER := /cygdrive/e
-        DRIVE_NUMBER_DEV := E:
+        DRIVE_NUMBER := /cygdrive/f
+        DRIVE_NUMBER_DEV := F:
         DRIVE_BUSY_RUN :=
         DRIVE_UNBUSY_RUN :=
         DRIVE_PERMISSION_RUN :=
