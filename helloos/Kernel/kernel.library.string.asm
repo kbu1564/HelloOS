@@ -20,16 +20,18 @@ _strcmp:
 
     xor dx, dx
     xor ax, ax
+    mov ds, ax
+    mov es, ax
     .L1:
+        mov dh, byte [di]
+        cmp dh, byte [si]
+        jne .notsame
+
         ; null check
         cmp byte [si], 0
         je .L1END
         cmp byte [di], 0
         je .L1END
-
-        mov dh, byte [di]
-        cmp dh, byte [si]
-        jne .notsame
 
         inc si
         inc di
