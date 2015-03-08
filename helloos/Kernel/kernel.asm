@@ -8,6 +8,8 @@ nop
 ; nop 명령어를 통해 올바른 커널인지 아닌지를 체크하므로
 ; 커널 데이터의 3byte 부분의 값은 무조건 nop 명령어 코드가
 ; 위치해야 한다.
+KernelMode db 16
+; 위의 값을 이용하여 커널 버전을 판단한다.
 
 _entry:
     jmp _start
@@ -58,8 +60,8 @@ _start:
     call _load_library
     ; ProtectedMode Kernel File Loading
 
-    mov cl, byte [KernelProtectModeMemoryArea + 2]
-    cmp cl, 0x90
+    mov cx, word [KernelProtectModeMemoryArea + 2]
+    cmp cx, 0x2090
     jne .error_loader
     ; Check to Kernel.protectmode.sys file
 

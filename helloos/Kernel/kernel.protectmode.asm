@@ -5,6 +5,9 @@ jmp _entry
 ; ProtectMode Entry Point Jump
 nop
 
+KernelMode db 32
+; 위의 값을 이용하여 커널 버전을 판단한다.
+
 _entry:
     jmp _protect_entry
     ; 이 부분에 각종 라이브러리 함수 파일들이 include 된다.
