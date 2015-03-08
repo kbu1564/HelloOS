@@ -58,13 +58,6 @@ _start:
     call _load_library
     ; ProtectedMode Kernel File Loading
 
-	push 10
-	push 0
-	push 4
-	push KernelProtectModeMemoryArea
-	call _print_byte_dump
-	jmp $
-
     mov cl, byte [KernelProtectModeMemoryArea + 2]
     cmp cl, 0x90
     jne .error_loader
