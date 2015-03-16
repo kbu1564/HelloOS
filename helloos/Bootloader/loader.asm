@@ -25,14 +25,14 @@ _start:
     mov es, ax
     mov ds, ax
     mov ss, ax
-    mov sp, 0xFFFE
-    mov bp, 0xFFFE
+    mov sp, 0xFFFF
+    mov bp, 0xFFFF
     ; 스택 초기화 루틴
 
     mov byte [BootDiskNumber], dl
     ; 부팅 디스크 번호 저장
 
-    call _print_cls
+    ;call _print_cls
     ; 화면 지우기
 
     push KernelFileName

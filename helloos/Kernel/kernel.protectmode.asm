@@ -213,15 +213,18 @@ _protect_entry:
 ;   mov ecx, 0x12345678
 ;   mov dword [0xF0000000], ecx
 ;   ;-------------------------------------------------------------
-;.clear_screen:
-;	; 비디오 화면 지우기
-;	mov esi, dword [PhysicalBasePointer]
-;	xor eax, eax
-;	mov ecx, 1024 * 768 * 3
-;	.clear_loop:
-;		mov byte [esi], 0xFF
-;		add esi, 1
-;		loop .clear_loop
+.clear_screen:
+	; 비디오 화면 지우기
+	mov ax, CodeDescriptor
+	mov ds, ax
+	mov es, ax
+    mov esi, dword [PhysicalBasePointer]
+    xor eax, eax
+    mov ecx, 1024 * 768 * 3
+    .clear_loop:
+        mov byte [esi], 0xFF
+        add esi, 1
+        loop .clear_loop
 
 ;   push 0xE0000000
 ;   push 0x00900000
