@@ -11,9 +11,9 @@ KERNEL_DIR = Kernel
 # 생성된 이미지 파일이 저장된 경로
 IMAGE_DIR = Image
 # 설치할 USB 드라이브 Label 이름
-DRIVE_NUMBER = OSUSB
+#DRIVE_NUMBER = OSUSB
 # DISK USB 장치 디바이스 경로 명
-DRIVE_NUMBER_DEV = /dev/disk3
+#DRIVE_NUMBER_DEV = /dev/disk2
 # 가상머신VirtualBox vbox 파일 경로
 VBOX_RUN_PATH = ~/VirtualBox\ VMs/HelloOS/HelloOS.vbox
 # 실행할 가상머신 종류 설정
@@ -36,6 +36,8 @@ Q = @
 #####################################################################
 # 운영체제 버전별 명령어 셋팅
 OS_DETECTING = $(shell uname -s)
+DRIVE_NUMBER     = $(shell mount | grep OSUSB | awk '{split($$0,arr," "); print arr[3];}')
+DRIVE_NUMBER_DEV = $(shell mount | grep OSUSB | awk '{split($$0,arr," "); print arr[1];}')
 # 실행 전 디바이스 접근을 위한 권한 변경
 DRIVE_PERMISSION_RUN = $(Q)$(SUDO) chmod 777 $(DRIVE_NUMBER_DEV)
 # 실행전 언마운트 작업이 필요한 경우의 처리 명령어
@@ -51,12 +53,12 @@ BOOTLOADER_INSTALLER = $(SUDO) dd if=$(IMAGE_DIR)/loader.img of=$(DRIVE_NUMBER_D
 # mac darwin
 ifeq ($(OS_DETECTING), Darwin)
 	# 임시 값
-	DRIVE_NUMBER := /Volumes/$(DRIVE_NUMBER)
+	#DRIVE_NUMBER := /Volumes/$(DRIVE_NUMBER)
 else
     # no Cygwin window or Ubuntu or fedora ...
     ifeq ($(OS_DETECTING), Linux)
-        DRIVE_NUMBER := /media/wook/$(DRIVE_NUMBER)
-        DRIVE_NUMBER_DEV := /dev/sdb1
+        #DRIVE_NUMBER := /media/wook/$(DRIVE_NUMBER)
+        #DRIVE_NUMBER_DEV := /dev/sdb1
         DRIVE_BUSY_RUN :=
         DRIVE_PERMISSION_RUN :=
     else
@@ -89,7 +91,7 @@ compile:
 # 부트로더 설치 작업 수행 및
 # 1 섹터에 loader.img Bootloader Write
 bootwriter:
-	$(DRIVE_BUSY_RUN)
+	$(DRIVE_UNBUSY_RUN)
 	$(BOOTLOADER_INSTALLER)
 
 # 커널 파일 설치
