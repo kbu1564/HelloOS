@@ -45,8 +45,8 @@ _start:
     mov di, word [DAPOffset]
     ; 로드에 성공한 경우 커널 데이터 메모리 주소를 설정한다
 
-    mov al, byte [di + 2]
-    xor al, 0x90
+    mov ax, word [di + 2]
+    xor ax, 0x1090
     jnz .kernel_load_error
     ; 올바른 커널 데이터 인지 체크
     
