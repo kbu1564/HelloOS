@@ -73,12 +73,16 @@ _start:
     ; 그래픽 모드로 시작하는 경우가 아니라면
     ; 그래픽 전환 작업을 하지 않는다.
 
-    mov cx, VbeMode.1024x768x16@32
-    call _get_vbe_mode_info
+    ; ax : 해상도에 해당하는 모드 번호
+    mov si, 1024
+    mov di, 768
+    mov dl, 16
+    call _get_vbe_mode
+    ; 특정 해상도의 모드 번호를 구한다.
 
-    mov bx, VbeMode.1024x768x16@32
+    mov bx, ax
     call _set_vbe_mode
-
+    ; 구한 모드 번호로 해상도를 변경
 .skip_graphic_mode:
     cli
     ; 이 부분에서 32bit Protected Mode 로 전환할 준비를 한다.

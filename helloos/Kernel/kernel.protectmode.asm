@@ -218,15 +218,12 @@ _protect_entry:
 ;   ;-------------------------------------------------------------
 .clear_screen:
 	; 비디오 화면 지우기
-	mov ax, CodeDescriptor
-	mov ds, ax
-	mov es, ax
     mov esi, dword [PhysicalBasePointer]
     xor eax, eax
     mov ecx, 1024 * 768 * 3
     .clear_loop:
         mov byte [esi], 0xFF
-        add esi, 1
+        inc esi
         loop .clear_loop
 
 ;   push 0xE0000000

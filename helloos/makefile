@@ -64,8 +64,8 @@ else
         #DRIVE_PERMISSION_RUN :=
     else
         # window cygwin
-        DRIVE_NUMBER := /cygdrive/f
-        DRIVE_NUMBER_DEV := F:
+        DRIVE_NUMBER := /cygdrive/g
+        DRIVE_NUMBER_DEV := G:
         #DRIVE_BUSY_RUN :=
         #DRIVE_UNBUSY_RUN :=
         #DRIVE_PERMISSION_RUN :=
