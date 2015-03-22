@@ -99,6 +99,18 @@ _kernel_init_paging:
     call _kernel_init_pdpt
     ; 페이징 자료구조 영역 초기화
 
+    ; 0x00000000 ~ 0xFFFFFFFF 까지의 페이지를 Mapping
+    mov ecx, 0x00000000
+    .loop:
+        push ecx
+        push ecx
+        push 0x200
+        call _kernel_alloc
+
+        add ecx, 0x00200000
+        cmp ecx, 0xFFFFFFFF
+        jl .loop
+
     ;-----------------------------------------------------------
     ; 커널 영역 할당 0x00000000 ~ 0x00100000
     ;-----------------------------------------------------------
@@ -128,7 +140,7 @@ _kernel_init_paging:
     ; 그래픽 모드로 시작하지 않는 경우 그래픽 영역 메모리를 활성화 하지 않는다.
 
     ;-----------------------------------------------------------------------
-    ; 비디오 영역 할당 0x00900000 ~ 0x00D00000
+    ; 비디오 영역 할당 0x00900000 ~ ??
     ;-----------------------------------------------------------------------
     xor eax, eax
     xor ecx, ecx
@@ -138,6 +150,8 @@ _kernel_init_paging:
     ; x * y
     xor ecx, ecx
     mov cl, byte [BitsPerPixel]
+    shr ecx, 3
+    ; bit -> byte
     mul ecx
     ; x * y * px
     mov ecx, 0x1000
@@ -145,9 +159,11 @@ _kernel_init_paging:
     ; 4KiB 단위로 필요한 용량 표현
 
     push dword [PhysicalBasePointer]
-    push 0x00900000
+    push dword [PhysicalBasePointer]
     push eax
     call _kernel_alloc
+    ; 2015-03-23
+    ; Video Memory는 동일한 주소로 맵핑 시켜야 한다!!
 .enable_paging:
     mov eax, dword [PageDirectory]
     mov cr3, eax

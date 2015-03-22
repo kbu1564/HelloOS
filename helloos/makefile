@@ -44,7 +44,7 @@ DRIVE_NUMBER_DEV = $(shell mount | grep OSUSB | awk '{split($$0,arr," "); print 
 #DRIVE_UNBUSY_RUN = $(Q)$(SUDO) diskutil unmountDisk $(DRIVE_NUMBER_DEV)
 #DRIVE_BUSY_RUN = $(Q)$(SUDO) diskutil mount $(DRIVE_NUMBER_DEV)
 # QEMU를 이용한 가상 운영체제 시뮬레이션 실행
-x86_64_RUN = qemu-system-x86_64 -m 64 -gdb tcp:127.0.0.1:1234 -hda $(DRIVE_NUMBER_DEV) -localtime -M pc
+x86_64_RUN = qemu-system-x86_64 -m 64 -hda $(DRIVE_NUMBER_DEV) -localtime -M pc
 # VirtualBox를 이용한 실행
 #VBOX_RUN = virtualbox --startvm $(VBOX_RUN_PATH)
 # bootloader (mbr area) 설치
@@ -64,8 +64,8 @@ else
         #DRIVE_PERMISSION_RUN :=
     else
         # window cygwin
-        DRIVE_NUMBER := /cygdrive/g
-        DRIVE_NUMBER_DEV := G:
+        DRIVE_NUMBER := /cygdrive/e
+        DRIVE_NUMBER_DEV := E:
         #DRIVE_BUSY_RUN :=
         #DRIVE_UNBUSY_RUN :=
         #DRIVE_PERMISSION_RUN :=

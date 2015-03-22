@@ -219,11 +219,10 @@ _protect_entry:
 .clear_screen:
 	; 비디오 화면 지우기
     mov esi, dword [PhysicalBasePointer]
-    xor eax, eax
-    mov ecx, 1024 * 768 * 3
+    mov ecx, 1024 * 768
     .clear_loop:
-        mov byte [esi], 0xFF
-        inc esi
+        mov dword [esi], 0xFFFFFFFF
+        add esi, 4
         loop .clear_loop
 
 ;   push 0xE0000000
