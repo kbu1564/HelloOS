@@ -99,18 +99,6 @@ _kernel_init_paging:
     call _kernel_init_pdpt
     ; 페이징 자료구조 영역 초기화
 
-    ; 0x00000000 ~ 0xFFFFFFFF 까지의 페이지를 Mapping
-    mov ecx, 0x00000000
-    .loop:
-        push ecx
-        push ecx
-        push 0x200
-        call _kernel_alloc
-
-        add ecx, 0x00200000
-        cmp ecx, 0xFFFFFFFF
-        jl .loop
-
     ;-----------------------------------------------------------
     ; 커널 영역 할당 0x00000000 ~ 0x00100000
     ;-----------------------------------------------------------
