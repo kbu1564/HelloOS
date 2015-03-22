@@ -32,6 +32,7 @@ _entry:
 _global_filename:
     KernelProtectModeMemoryArea  equ 0x9000
     KernelProtectModeLoadingFail db  'kernel.protectmode(32bit) Loading Failure', 0
+    KernelGraphicsModeFail       db  'Graphic Mode Starting Failure', 0
     KernelProtectModeFileName    db  'kernel.protectmode.sys', 0
     ; 로드할 커널 파일 이름
 _start:
@@ -73,12 +74,16 @@ _start:
     ; 그래픽 모드로 시작하는 경우가 아니라면
     ; 그래픽 전환 작업을 하지 않는다.
 
-    mov cx, VbeMode.1024x768x16@32
-    call _get_vbe_mode_info
+    ; ax : 해상도에 해당하는 모드 번호
+    mov si, 1024
+    mov di, 768
+    mov dl, 32
+    call _get_vbe_mode
+    ; 특정 해상도의 모드 번호를 구한다.
 
-    mov bx, VbeMode.1024x768x16@32
+    mov bx, ax
     call _set_vbe_mode
-
+    ; 구한 모드 번호로 해상도를 변경
 .skip_graphic_mode:
     cli
     ; 이 부분에서 32bit Protected Mode 로 전환할 준비를 한다.
@@ -99,7 +104,10 @@ _start:
     jmp $+2
     nop
     nop
-    ; 혹시 남아 있을지 모를 16bit 명령어들을 제거
+    ; CPU는 명령어를 해석하기 위해 여러 절차에 따라
+    ; 다음 명령어를 해석 준비하는 작업을 수행하므로 비록 실행은 되지 않지만
+    ; 아무런 기능을 수행하지 않는 작업을 수행시킴으로써 남아있을지 모를 16bit 명령어들을
+    ; 제거하는 역할을 한다.
 
     jmp dword CodeDescriptor:KernelProtectModeMemoryArea
 
@@ -108,6 +116,14 @@ _start:
     push 0x04
     push KernelProtectModeLoadingFail
     call _print
+    jmp .end_loader
+
+.error_graphics:
+    push 0
+    push 0x04
+    push KernelGraphicsModeFail
+    call _print
+    jmp .end_loader
 
 .end_loader:
     hlt

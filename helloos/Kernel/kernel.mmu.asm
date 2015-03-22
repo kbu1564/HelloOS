@@ -128,17 +128,30 @@ _kernel_init_paging:
     ; 그래픽 모드로 시작하지 않는 경우 그래픽 영역 메모리를 활성화 하지 않는다.
 
     ;-----------------------------------------------------------------------
-    ; 비디오 영역 할당 0x00900000 ~ 0x00D00000
+    ; 비디오 영역 할당 0x00900000 ~ ??
     ;-----------------------------------------------------------------------
-    mov eax, dword [PhysicalBasePointer]
-    add eax, 0x400000
+    xor eax, eax
+    xor ecx, ecx
+    mov ax, word [xResolution]
+    mov cx, word [yResolution]
+    mul ecx
+    ; x * y
+    xor ecx, ecx
+    mov cl, byte [BitsPerPixel]
+    shr ecx, 3
+    ; bit -> byte
+    mul ecx
+    ; x * y * px
     mov ecx, 0x1000
     div ecx
     ; 4KiB 단위로 필요한 용량 표현
-    ;push dword [PhysicalBasePointer]
-    ;push 0x00900000
-    ;push eax
-    ;call _kernel_alloc
+
+    push dword [PhysicalBasePointer]
+    push dword [PhysicalBasePointer]
+    push eax
+    call _kernel_alloc
+    ; 2015-03-23
+    ; Video Memory는 동일한 주소로 맵핑 시켜야 한다!!
 .enable_paging:
     mov eax, dword [PageDirectory]
     mov cr3, eax
