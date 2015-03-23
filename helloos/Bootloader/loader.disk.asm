@@ -99,11 +99,15 @@ _disk_load_kernel_data_to_memory:
     xor cx, cx
     mov cl, byte [es:di]
     and cl, 0x0F
+
+    cmp cl, 0x01
+    jae .end_of_entry
+
     .jmp_long_dir_entry:
         add di, 0x20
         dec cl
         jnz .jmp_long_dir_entry
-
+.end_of_entry:
     add di, 0x20
     jmp .dir_entry_check
 .short_dir_entry:
