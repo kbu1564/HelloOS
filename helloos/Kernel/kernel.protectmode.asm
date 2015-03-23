@@ -170,7 +170,7 @@ _protect_entry:
 
     test ax, ax
     jnz .info_false
-    ; vbe 2.0 미만 또는 상태 정보값 읽기 실패인 경우
+    ; vbe 상태 정보값 읽기 실패인 경우
     ; 커널 종료
 
     push 4
@@ -202,7 +202,7 @@ _protect_entry:
 ;   mov eax, 10
 ;   mov ecx, 0
 ;   div ecx
-
+;
 ;   ;-----------------------------------------------------------------------
 ;   ; 0xF0000000의 논리 주소를 0x01000000의 물리 메모리 주소로 Mapping
 ;   ; 커널 메모리 할당 테스트
@@ -216,23 +216,8 @@ _protect_entry:
 ;   mov ecx, 0x12345678
 ;   mov dword [0xF0000000], ecx
 ;   ;-------------------------------------------------------------
-.clear_screen:
-	; 비디오 화면 지우기
-    mov esi, dword [PhysicalBasePointer]
-    mov ecx, 1024 * 768
-    .clear_loop:
-        mov dword [esi], 0xFFFFFFFF
-        add esi, 4
-        loop .clear_loop
-
-;   push 0xE0000000
-;   push 0x00900000
-;   push (0xE0001000-0xE0000000)/0x1000
-;   call _kernel_alloc
-;   ; 커널 영역의 비디오 메모리 할당
-;
-;   mov ecx, 0x12345678
-;   mov dword [0xE0000000], ecx
+    mov ebx, 0xFFFF0000
+    call _vga_clear_screen
 .end_kernel:
     hlt
     jmp .end_kernel

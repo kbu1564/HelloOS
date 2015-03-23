@@ -1,37 +1,29 @@
-; cx : color
-; si : x
-; di : y
-; set pixel_16bit rgb
-_pixel_16:
-	push ebp
-	mov ebp, esp
-	pusha
+; 그래픽 전용 라이브러리 함수
+; 2015-03-23
 
-	mov esi, dword [PhysicalBasePointer]
-	;mov ecx, dword [ebp + 8]
-	; color
-	;mov esi, dword [ebp + 12]
-	; x
-	;mov edi, dword [ebp + 16]
-	; y
-	mov eax, dword [BytePerScanLine]
-	; a = x + y * (BytePerScanLine / 2)
-	shr eax, 1
-	mul dword [ebp + 16]
-	add eax, dword [ebp + 12]
+; 비디오 화면 지우기
+; ebx : ColorCode ARGB
+_vga_clear_screen:
+    push esi
+    push eax
+    push ecx
 
-	shl eax, 1
-	; convert short offset
+    mov esi, dword [PhysicalBasePointer]
 
-	add esi, eax
-	; move offset
+    xor eax, eax
+    xor ecx, ecx
+    mov ax, word [xResolution]
+    mov cx, word [yResolution]
+    mul ecx
+    ; x * y
 
-	mov ecx, dword [ebp + 8]
-	mov dword [esi], ecx
-	; write color
+    mov ecx, eax
+    .clear_loop:
+        mov dword [esi], ebx
+        add esi, 4
+        loop .clear_loop
 
-	popa
-	mov esp, ebp
-	pop ebp
-	ret 12
-
+    pop ecx
+    pop eax
+    pop esi
+    ret
