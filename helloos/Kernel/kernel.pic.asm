@@ -82,6 +82,7 @@ _send_eoi_to_pic:
     mov ebp, esp
     pusha
 
+    xor edx, edx
     mov eax, dword [ebp+8]
 
     mov dl, 0x20

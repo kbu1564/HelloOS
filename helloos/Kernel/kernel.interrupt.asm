@@ -367,6 +367,9 @@ _kernel_load_idt:
 ; edi : interrupt number
 ; esi : error code
 _kernel_interrupt_handler:
+    mov eax, dword [_print32_location]
+    push eax
+
     push 24
     push 0
     call _print32_gotoxy
@@ -380,10 +383,27 @@ _kernel_interrupt_handler:
     push edi
     call _print_hex32
 
+    ; 이곳에서 등록된 인터럽트 핸들러가 실행되도록 한다.
+    mov eax, edi
+    mov edx, DFT + 5
+    shl eax, 2
+    add edx, eax
+
+    mov eax, dword [edx]
+    test eax, eax
+    jz .end_of_interrupt
+
+    call dword [edx]
+    ; Handler Run
+
+.end_of_interrupt:
     sub edi, 32
     push edi
     call _send_eoi_to_pic
     ; PIC에게 인터럽트 종료 신호 보내기
+
+    pop eax
+    mov dword [_print32_location], eax
     ret
 
 ; 예외 처리 핸들러
@@ -413,6 +433,20 @@ _kernel_exception_handler:
     push 52
     push eax
     call _print_hex32
+
+    ; 이곳에서 등록된 인터럽트 핸들러가 실행되도록 한다.
+    mov eax, edi
+    mov edx, DFT + 5
+    shl eax, 2
+    add edx, eax
+
+    mov eax, dword [edx]
+    test eax, eax
+    jz .L1
+
+    call dword [edx]
+    ; Handler Run
+
 .L1:
     hlt
     jmp .L1

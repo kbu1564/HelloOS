@@ -30,10 +30,15 @@ _entry:
     ; A20 기능 활성화 라이브러리
     %include "kernel.mmu.asm"
     ; 메모리 관련 함수(페이징 처리)
-    %include "kernel.interrupt.asm"
-    ; 인터럽트 관련 처리 함수
     %include "kernel.pic.asm"
     ; pic 관련 함수 라이브러리
+    %include "kernel.interrupt.asm"
+    ; 인터럽트 관련 처리 함수
+    %include "kernel.interrupt.handler.asm"
+    ; Device Driver Function Table
+
+_device_function_table:
+    %include "../Interrupt/kernel.keyboard.asm"
 
 _global_variables:
     ;------------------------------------------------------------------------------------
@@ -50,8 +55,8 @@ _global_variables:
     Paging32ModeMessage:        db '32bit None-PAE Paging Mode ------- ', 0x0A, 0
     ; 32bit 페이징 처리 완료 메시지
     ;------------------------------------------------------------------------------------
-
     VbeSupportVersionMessage:   db 'VBE Support Version -------------- ', 0x0A, 0
+    KeyboardActiveMessage:      db 'Keyboard Active Status ----------- ', 0x0A, 0
 
 ;----------------------------------------------
 ; 보호모드 진입
@@ -216,8 +221,35 @@ _protect_entry:
 ;   mov ecx, 0x12345678
 ;   mov dword [0xF0000000], ecx
 ;   ;-------------------------------------------------------------
-    mov ebx, 0xFFFF0000
-    call _vga_clear_screen
+;    mov ebx, 0xFFFF0000
+;    call _vga_clear_screen
+
+    ; 각종 디바이스 활성화
+    ; 키보드 디바이스 활성화
+    push 0x07
+    push KeyboardActiveMessage
+    call _print32
+
+    call _IHTKeyboardInitialize
+    ; 키보드 활성화
+
+    mov esi, 5
+    cmp eax, 0x01
+    jne .info_false
+    ; 활성화 실패!!
+
+    mov edi, .kbd_act_true
+    jmp .info_true
+.kbd_act_true:
+    ; 키보드 디바이스 활성화 완료
+    ; Handler 등록
+    mov edi, 0x21
+    mov esi, _IHTKeyboardHandler
+    call _kernel_set_interrupt_handler
+
+;--------------------------------------------------------
+; 커널 종료 및 성공 & 실패 메시지 출력
+;--------------------------------------------------------
 .end_kernel:
     hlt
     jmp .end_kernel

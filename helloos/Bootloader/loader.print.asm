@@ -39,28 +39,3 @@ _print:
     mov sp, bp
     pop bp
     ret 6
-
-; 화면 전체를 지우는 명령어
-_print_cls:
-    pusha
-    mov ax, es
-    push ax
-
-    mov si, 80*25*2
-    ; 초기화 작업 수행
-
-    mov ax, 0xB800
-    mov es, ax
-.for_loop:
-    cmp si, 0
-    je .for_end
-
-    mov byte [es:si], 0
-
-    sub si, 1
-    jmp .for_loop
-.for_end:
-    pop ax
-    mov es, ax
-    popa
-    ret
