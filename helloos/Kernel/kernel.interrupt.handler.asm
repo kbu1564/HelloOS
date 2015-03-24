@@ -19,6 +19,7 @@ DFT:
 ; 특정 인터럽트 번호에 해당하는 핸들러 함수를 등록한다.
 _kernel_set_interrupt_handler:
     pusha
+    cli
 
     mov edx, DFT + 5
     shl edi, 2
@@ -26,6 +27,7 @@ _kernel_set_interrupt_handler:
     shr edi, 2
     mov dword [edx], esi
 
+    sti
     popa
     ret
 
@@ -33,6 +35,7 @@ _kernel_set_interrupt_handler:
 ; 특정 인터럽트 번호에 해당하는 핸들러 함수를 등록 해제 한다.
 _kernel_unset_interrupt_handler:
     pusha
+    cli
 
     mov edx, DFT + 5
     shl edi, 2
@@ -40,5 +43,6 @@ _kernel_unset_interrupt_handler:
     shr edi, 2
     mov dword [edx], 0
 
+    sti
     popa
     ret

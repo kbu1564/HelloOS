@@ -2,7 +2,10 @@
 ;
 ; o port byte
 _out_port_byte:
+    push edx
+    mov dh, 0
     out dx, al
+    pop edx
     ret
 
 ; o port word
@@ -12,7 +15,10 @@ _out_port_word:
 
 ; i port byte
 _in_port_byte:
+    push edx
+    mov dh, 0
     in al, dx
+    pop edx
     ret
 
 ; i port word

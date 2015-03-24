@@ -39,6 +39,7 @@ _entry:
 
 _device_function_table:
     %include "../Interrupt/kernel.keyboard.asm"
+    %include "../Interrupt/kernel.mouse.asm"
 
 _global_variables:
     ;------------------------------------------------------------------------------------
@@ -56,8 +57,10 @@ _global_variables:
     ; 32bit 페이징 처리 완료 메시지
     ;------------------------------------------------------------------------------------
     VbeSupportVersionMessage:   db 'VBE Support Version -------------- ', 0x0A, 0
+    ; 그래픽 모드 지원 버전 체크 메시지
     KeyboardActiveMessage:      db 'Keyboard Active Status ----------- ', 0x0A, 0
-
+    MouseActiveMessage:         db 'Mouse Active Status -------------- ', 0x0A, 0
+    ; 각종 디바이스 초기화 상태 메시지
 ;----------------------------------------------
 ; 보호모드 진입
 ;----------------------------------------------
@@ -225,7 +228,9 @@ _protect_entry:
 ;    call _vga_clear_screen
 
     ; 각종 디바이스 활성화
+    ;--------------------------------------------------------
     ; 키보드 디바이스 활성화
+    ;--------------------------------------------------------
     push 0x07
     push KeyboardActiveMessage
     call _print32
@@ -243,8 +248,32 @@ _protect_entry:
 .kbd_act_true:
     ; 키보드 디바이스 활성화 완료
     ; Handler 등록
-    mov edi, 0x21
+    mov edi, 33
     mov esi, _IHTKeyboardHandler
+    call _kernel_set_interrupt_handler
+
+    ;--------------------------------------------------------
+    ; 마우스 디바이스 활성화
+    ;--------------------------------------------------------
+    push 0x07
+    push MouseActiveMessage
+    call _print32
+
+    call _IHTMouseInitialize
+    ; 마우스 활성화
+
+    mov esi, 6
+    cmp eax, 0x01
+    jne .info_false
+    ; 활성화 실패!!
+
+    mov edi, .mus_act_true
+    jmp .info_true
+.mus_act_true:
+    ; 마우스 디바이스 활성화 완료
+    ; Handler 등록
+    mov edi, 44
+    mov esi, _IHTMouseHandler
     call _kernel_set_interrupt_handler
 
 ;--------------------------------------------------------
