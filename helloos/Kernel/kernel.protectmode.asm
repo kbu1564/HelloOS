@@ -30,10 +30,16 @@ _entry:
     ; A20 기능 활성화 라이브러리
     %include "kernel.mmu.asm"
     ; 메모리 관련 함수(페이징 처리)
-    %include "kernel.interrupt.asm"
-    ; 인터럽트 관련 처리 함수
     %include "kernel.pic.asm"
     ; pic 관련 함수 라이브러리
+    %include "kernel.interrupt.asm"
+    ; 인터럽트 관련 처리 함수
+    %include "kernel.interrupt.handler.asm"
+    ; Device Driver Function Table
+
+_device_function_table:
+    %include "../Interrupt/kernel.keyboard.asm"
+    %include "../Interrupt/kernel.mouse.asm"
 
 _global_variables:
     ;------------------------------------------------------------------------------------
@@ -50,9 +56,11 @@ _global_variables:
     Paging32ModeMessage:        db '32bit None-PAE Paging Mode ------- ', 0x0A, 0
     ; 32bit 페이징 처리 완료 메시지
     ;------------------------------------------------------------------------------------
-
     VbeSupportVersionMessage:   db 'VBE Support Version -------------- ', 0x0A, 0
-
+    ; 그래픽 모드 지원 버전 체크 메시지
+    KeyboardActiveMessage:      db 'Keyboard Active Status ----------- ', 0x0A, 0
+    MouseActiveMessage:         db 'Mouse Active Status -------------- ', 0x0A, 0
+    ; 각종 디바이스 초기화 상태 메시지
 ;----------------------------------------------
 ; 보호모드 진입
 ;----------------------------------------------
@@ -170,7 +178,7 @@ _protect_entry:
 
     test ax, ax
     jnz .info_false
-    ; vbe 2.0 미만 또는 상태 정보값 읽기 실패인 경우
+    ; vbe 상태 정보값 읽기 실패인 경우
     ; 커널 종료
 
     push 4
@@ -202,7 +210,7 @@ _protect_entry:
 ;   mov eax, 10
 ;   mov ecx, 0
 ;   div ecx
-
+;
 ;   ;-----------------------------------------------------------------------
 ;   ; 0xF0000000의 논리 주소를 0x01000000의 물리 메모리 주소로 Mapping
 ;   ; 커널 메모리 할당 테스트
@@ -216,23 +224,61 @@ _protect_entry:
 ;   mov ecx, 0x12345678
 ;   mov dword [0xF0000000], ecx
 ;   ;-------------------------------------------------------------
-.clear_screen:
-	; 비디오 화면 지우기
-    mov esi, dword [PhysicalBasePointer]
-    mov ecx, 1024 * 768
-    .clear_loop:
-        mov dword [esi], 0xFFFFFFFF
-        add esi, 4
-        loop .clear_loop
+;    mov ebx, 0xFFFF0000
+;    call _vga_clear_screen
 
-;   push 0xE0000000
-;   push 0x00900000
-;   push (0xE0001000-0xE0000000)/0x1000
-;   call _kernel_alloc
-;   ; 커널 영역의 비디오 메모리 할당
-;
-;   mov ecx, 0x12345678
-;   mov dword [0xE0000000], ecx
+    ; 각종 디바이스 활성화
+    ;--------------------------------------------------------
+    ; 키보드 디바이스 활성화
+    ;--------------------------------------------------------
+    push 0x07
+    push KeyboardActiveMessage
+    call _print32
+
+    call _IHTKeyboardInitialize
+    ; 키보드 활성화
+
+    mov esi, 5
+    cmp eax, 0x01
+    jne .info_false
+    ; 활성화 실패!!
+
+    mov edi, .kbd_act_true
+    jmp .info_true
+.kbd_act_true:
+    ; 키보드 디바이스 활성화 완료
+    ; Handler 등록
+    mov edi, 33
+    mov esi, _IHTKeyboardHandler
+    call _kernel_set_interrupt_handler
+
+    ;--------------------------------------------------------
+    ; 마우스 디바이스 활성화
+    ;--------------------------------------------------------
+    push 0x07
+    push MouseActiveMessage
+    call _print32
+
+    call _IHTMouseInitialize
+    ; 마우스 활성화
+
+    mov esi, 6
+    cmp eax, 0x01
+    jne .info_false
+    ; 활성화 실패!!
+
+    mov edi, .mus_act_true
+    jmp .info_true
+.mus_act_true:
+    ; 마우스 디바이스 활성화 완료
+    ; Handler 등록
+    mov edi, 44
+    mov esi, _IHTMouseHandler
+    call _kernel_set_interrupt_handler
+
+;--------------------------------------------------------
+; 커널 종료 및 성공 & 실패 메시지 출력
+;--------------------------------------------------------
 .end_kernel:
     hlt
     jmp .end_kernel

@@ -32,9 +32,6 @@ _start:
     mov byte [BootDiskNumber], dl
     ; 부팅 디스크 번호 저장
 
-    ;call _print_cls
-    ; 화면 지우기
-
     push KernelFileName
     call _disk_load_kernel_data_to_memory
     ; 부팅 장치로 부터 kernel 이라는 이름의 파일을

@@ -25,6 +25,11 @@ FirstLongFileName       equ 0x01
 SecondLongFileName      equ 0x0E
 ThirdLongFileName       equ 0x1C
 
+LongFileNameIndex       db FirstLongFileName
+                        db SecondLongFileName
+                        db ThirdLongFileName
+LongFileNameStartIndex  db 0x05, 0x06, 0x02
+
 ; push 찾고자 하는 파일 이름
 _load_library:
     szFileName          equ 100
@@ -283,9 +288,9 @@ _load_library:
     ;------------------------------------------------
     ; File System Cluster Caching
     ;------------------------------------------------
-    mov word [DiskAddressPacket], 16
+    mov word [DiskAddressPacket], 0x10
     ; DAP의 Size
-    mov word [DiskAddressPacket + 2], 8
+    mov word [DiskAddressPacket + 2], 0x08
     ; 읽어들일 섹터 수 : 1 cluster
     mov dword [DiskAddressPacket + 4], 0x0000
     mov dword [DiskAddressPacket + 6], 0x7000

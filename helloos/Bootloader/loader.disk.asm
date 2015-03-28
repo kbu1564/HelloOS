@@ -1,24 +1,3 @@
-; 드라이브 리셋
-; dl : 드라이브 번호
-;_disk_reset:
-;   pusha
-;   mov dl, byte [BootDiskNumber]
-;   mov ah, 0
-;   ; 리셋 플래그 설정
-;
-;   int 0x13
-;   ; Disk I/O Interrupt
-;   jnc .end
-;   ; 오류가 없을 경우 함수 정상 종료
-;
-;   push 1
-;   push 0x04
-;   push DiskResetError
-;   call _print 
-;.end:
-;   popa
-;   ret
-
 ; CD는 1 sector = 2048 byte
 ; System Area = 16 sector
 ; CD Signature = CD001
@@ -52,7 +31,7 @@ _disk_load_kernel_data_to_memory:
     mov ah, 0x42
     mov dl, byte [BootDiskNumber]
     int 0x13
-    jc .error
+    jc .end
     ; 오류 발생한 경우 함수 종료
     ; 오류 없이 성공적으로 섹터 읽기에 성공한 경우
 .success:
@@ -99,11 +78,16 @@ _disk_load_kernel_data_to_memory:
     xor cx, cx
     mov cl, byte [es:di]
     and cl, 0x0F
+
+    cmp cl, 0x01
+    je .end_of_entry
+
     .jmp_long_dir_entry:
         add di, 0x20
         dec cl
         jnz .jmp_long_dir_entry
 
+.end_of_entry:
     add di, 0x20
     jmp .dir_entry_check
 .short_dir_entry:
@@ -117,8 +101,10 @@ _disk_load_kernel_data_to_memory:
     xor ax, ax
 .loop_copy:
     mov ah, byte [ds:bx]
-    cmp ah, 0
-    je .loop_end
+    ;cmp ah, 0
+    ;je .loop_end
+    test ah, ah
+    jz .loop_end
     ; 위 조건이 만족하는 경우
     ; 비교 대상이 NULL 문자가 나온경우
     ; 일치한 문자열을 찾은경우
@@ -169,12 +155,6 @@ _disk_load_kernel_data_to_memory:
     int 0x13
     jnc .end
     ; 커널 데이터 메모리 로드
-.error:
-    push 0
-    push 0x04
-    push KernelLoadError
-    call _print
-    ; 커널 로드 실패시 오류 메시지 출력 후 함수 종료
 .end:
     popa
 

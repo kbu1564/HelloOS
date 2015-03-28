@@ -6,16 +6,16 @@
 _strcmp:
     push dx
 
-    ; push 10
-    ; push 0x04
-    ; push si
-    ; call _print
+    ;push 10
+    ;push 0x04
+    ;push si
+    ;call _print
     ; src 출력
     
-    ; push 11
-    ; push 0x04
-    ; push di
-    ; call _print
+    ;push 11
+    ;push 0x04
+    ;push di
+    ;call _print
     ; dist 출력
 
     xor dx, dx

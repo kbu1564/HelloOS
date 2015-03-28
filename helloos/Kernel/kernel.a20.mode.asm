@@ -45,15 +45,24 @@ _set_a20_mode:
 ; CPU가 input buffer에 DATA를 사용하는 중인지
 ; 체크하여 사용중이 아닐때 까지 무한 대기 시킨다.
 _wait_to_buffer_cpu:
+    push eax
+    push edx
+
 .L1:
-    mov dx, 0x64
-    in al, dx
+    xor eax, eax
+    xor edx, edx
+    mov dl, 0x64
+    call _in_port_byte
+
     test al, 0x20
     ; 상태 레지스터로 부터 input buffer에 CPU Data가 존재하는지 체크
     ; 체크는 0x60 포트로 부터 1byte 읽어들인 뒤 0x20와 and 연산을 통해 해당
     ; 비트가 켜져있는지를 체크하는 방식으로 하면 된다.
     jnz .L1
     ; CPU가 데이터사용을 끝낼때 까지 대기 시킨다.
+
+    pop edx
+    pop eax
     ret
 
 ; A20 기능의 정상 동작 여부를 확인하여 
