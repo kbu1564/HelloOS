@@ -41,8 +41,8 @@ else
     # linux or cygwin
     ifneq ($(OS_DETECTING), Linux)
         # window cygwin
-        DRIVE_NUMBER := /cygdrive/e
-        DRIVE_NUMBER_DEV := E:
+        DRIVE_NUMBER := /cygdrive/h
+        DRIVE_NUMBER_DEV := H:
         SUDO := 
     endif
 

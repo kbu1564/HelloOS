@@ -60,37 +60,9 @@ _disk_load_kernel_data_to_memory:
 .dir_entry_check:
     ; Long Directory Entry Check
     mov cl, byte [es:di+11]
-    cmp cl, 0x0F
-    jne .short_dir_entry
-    ;mov cl, byte [es:di]
-    ;or cl, 0x40
-    ;cmp cl, 0x0F
-    ;jne .short_dir_entry
+    test cl, 0x40
+    jnz .loop_not_found
 
-    ; 이 부분이 실행 된 경우 cl 만큼 루프를 돌려야 한다.
-.long_dir_entry:
-    ; long dir entry : filename add 10byte
-    ; cl : Nth Long entry
-    ;cmp cl, 0
-    ;je .end
-    ; 1th ~ Nth loop
-    ;dec cl
-    xor cx, cx
-    mov cl, byte [es:di]
-    and cl, 0x0F
-
-    cmp cl, 0x01
-    je .end_of_entry
-
-    .jmp_long_dir_entry:
-        add di, 0x20
-        dec cl
-        jnz .jmp_long_dir_entry
-
-.end_of_entry:
-    add di, 0x20
-    jmp .dir_entry_check
-.short_dir_entry:
     ; short dir entry : filename 8byte
     cmp byte [es:di], 0
     je .end

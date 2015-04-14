@@ -224,8 +224,8 @@ _protect_entry:
 ;   mov ecx, 0x12345678
 ;   mov dword [0xF0000000], ecx
 ;   ;-------------------------------------------------------------
-;    mov ebx, 0xFFFF0000
-;    call _vga_clear_screen
+    mov ebx, 0xFFFF0000
+    call _vga_clear_screen
 
     ; 각종 디바이스 활성화
     ;--------------------------------------------------------

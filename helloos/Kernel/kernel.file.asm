@@ -34,6 +34,7 @@ LongFileNameStartIndex  db 0x05, 0x06, 0x02
 _load_library:
     szFileName          equ 100
     nLongEntry          equ 100 + 255
+    nTempData           equ 0x5000
     pLoadAddress        equ 0x5100
     pTempFileEntry      equ 0x5110
     szSearachFileName   equ 0x5200
@@ -96,8 +97,6 @@ _load_library:
     ; 1클러스터 당 섹터 수
 
     ; RootDirectoryEntry는 1클러스터 단위로 존재
-    mov word [DiskAddressPacket], 16
-    ; 64bit 주소까지 
     mov word [DiskAddressPacket + 2], cx
     ; 읽어들일 섹터 수 : 1 cluster
     mov dword [DiskAddressPacket + 4], ClusterBinaryData
@@ -115,6 +114,8 @@ _load_library:
 
     mov di, ClusterBinaryData
 .read:
+    ; 이 부분에서 버퍼를 초기화 하는 작업을 수행 한다.
+
     cmp di, ClusterBinaryData + 0x1000
     jae .error_or_end
 
@@ -130,6 +131,10 @@ _load_library:
     xor ax, ax
     ; 긴 파일 이름 얻기
     mov bp, sp
+
+    ; 삭제된 파일인지 체크
+    cmp byte [di + FileName], 0xE5
+    je .next
 
     mov al, byte [di + FileName]
     test al, 0x40
@@ -156,12 +161,13 @@ _load_library:
     mov cl, byte [bp - nLongEntry]
 
     mov word [bp - nLongEntry], si
-    push bp
+    mov word [nTempData + 2], bp
     ; LFE 다음 Entry Offset 저장
 
     ; 여기에서의 인터럽트는 작동을 잘한다..
     ; 그럼 아래에서 무언가가 0x0000 ~ 0x03ff 번지에 영향을 끼친다는 소리가 된다.
 
+    ; 2015-04-13 이상하게 아래의 루프문 안에서 운영체제 강제 종료 현상이 발생한다.
     .lname:
         sub si, 0x20
 
@@ -218,27 +224,31 @@ _load_library:
 
         loop .lname
 
-    pop bp
+    mov bp, word [nTempData + 2]
     ; 이 시점을 기준으로 인터럽트의 작동이 비정상 적으로 변한다.
     ; 의심되는 부분은 스택 메모리 부분이다.
     ;
     ; 해결 완료!!
     ; 문제는 위의 소스 코드에서 real mode idt 부분의 메모리를 참조하는 것에 있었다.
 
-    pop di
-    push word [bp - nLongEntry]
+    mov di, word [bp - nLongEntry]
+    mov word [nTempData], di
 
     jmp .print
 .find:
 ; 유효한 파일 발견
-    push di
+    mov word [nTempData], di
     ; 최근 발견 위치 저장
     mov word [pTempFileEntry], di
 
     xor ax, ax
     mov ah, byte [di + FileFlag]
-    test ah, 0x0F
-    jnz .long
+    ; 파일 종류 얻기
+    cmp ah, 0x08
+    je .next
+    ; 드라이브 라벨 이름 체크
+    cmp ah, 0x0F
+    je .long
     ; 긴 이름의 파일 체크
     ;
     ; 파일 Flag 값의 3번째 비트의 값이 1이면
@@ -277,7 +287,7 @@ _load_library:
     test ax, ax
     jnz .notfound
 .search_data:
-   	pop di
+   	mov di, word [nTempData]
     ; 찾고자 하는 파일인 경우
     ; 해당 파일을 발견 하였으므로 원하는 처리를 수행한다.
     mov di, word [pTempFileEntry]
@@ -322,6 +332,8 @@ _load_library:
     mov dword [NextClusterNumber], eax
     ; 다음 읽어올 데이터 클러스터 영역을 셋팅
 .data_loop:
+; 2015-04-13 파일은 정상적으로 발견 하되 로드부분이 잘못 작동 하는듯 싶다
+
     mov eax, dword [NextClusterNumber]
     mov ecx, eax
     and eax, 0x0FFFFFFF
@@ -406,7 +418,7 @@ _load_library:
     ;        하게 되는 것 이였다.
 .notfound:
     ; 찾고자 하는 파일명이 아닐 경우 이 위치로 바로 jmp
-    pop di
+    mov di, word [nTempData]
 .next:
     ; 다음 파일 엔트리 검색
     add di, 0x20
@@ -414,5 +426,6 @@ _load_library:
 .error_or_end:
     ; 오류 혹은 기타 상황에 의해 종료
     popa
+    mov sp, bp
     pop bp
-    retn 4
+    retn 6
