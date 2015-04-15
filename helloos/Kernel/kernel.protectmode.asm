@@ -278,7 +278,7 @@ _protect_entry:
     call _draw_font
 
     inc ecx
-    cmp ecx, 36
+    cmp ecx, 62
     jne .font_test
 
 ;--------------------------------------------------------

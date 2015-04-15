@@ -184,6 +184,8 @@ _IHTMouseHandler:
     jz .end
     ; 마우스 데이터 인지 체크
 
+    inc byte [MousePositionCount]
+
     push 22
     push 0
     call _print32_gotoxy
@@ -192,6 +194,12 @@ _IHTMouseHandler:
     push MouseCodeMessage
     call _print32
 
+    push 100
+    push 100
+    push 0x00000000
+    push cursor.default
+    call _draw_cursor
+
     push 22
     push 17
     push eax
@@ -199,4 +207,8 @@ _IHTMouseHandler:
 .end:
     ret
 
-MouseCodeMessage db 'MouseCode Number : ', 0
+MouseCodeMessage   db 'MouseCode Number : ', 0
+MousePositionCount db 0x00
+MousePosition:
+          .x  dw 0x0000
+          .y  dw 0x0000
