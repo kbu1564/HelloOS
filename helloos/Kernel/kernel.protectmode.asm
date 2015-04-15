@@ -12,8 +12,9 @@ _entry:
     jmp _protect_entry
     ; 이 부분에 각종 라이브러리 함수 파일들이 include 된다.
 
-    %include "kernel.print.asm"
-    %include "kernel.debug.dump.asm"
+    ; Kernel Library
+    %include "kernel.library.print.asm"
+    %include "kernel.library.debug.asm"
     ; 화면 출력 함수
     %include "kernel.vbe.header.asm"
     ; Vedio BIOS Extension Library
@@ -36,10 +37,13 @@ _entry:
     ; 인터럽트 관련 처리 함수
     %include "kernel.interrupt.handler.asm"
     ; Device Driver Function Table
+    %include "./Resource/kernel.mouse.asm"
+    %include "./Resource/kernel.font.asm"
+    ; Resource
 
 _device_function_table:
-    %include "../Interrupt/kernel.keyboard.asm"
-    %include "../Interrupt/kernel.mouse.asm"
+    %include "./Interrupt/kernel.keyboard.asm"
+    %include "./Interrupt/kernel.mouse.asm"
 
 _global_variables:
     ;------------------------------------------------------------------------------------
@@ -202,28 +206,6 @@ _protect_entry:
     call _kernel_load_tss
     ; TSS 설정
 
-;   ;-------------------------------------------------------------
-;   ; 인터럽트 발생 테스트
-;   ; 여러가지 인터럽트 예외를 강제적으로 발생시킨다.
-;   ;-------------------------------------------------------------
-;   ; devide error!!
-;   mov eax, 10
-;   mov ecx, 0
-;   div ecx
-;
-;   ;-----------------------------------------------------------------------
-;   ; 0xF0000000의 논리 주소를 0x01000000의 물리 메모리 주소로 Mapping
-;   ; 커널 메모리 할당 테스트
-;   ;-----------------------------------------------------------------------
-;   push 0xF0000000
-;   push 0x01000000
-;   push (0xF0001000-0xF0000000)/0x1000
-;   call _kernel_alloc
-;
-;   ; page fault!!
-;   mov ecx, 0x12345678
-;   mov dword [0xF0000000], ecx
-;   ;-------------------------------------------------------------
     mov ebx, 0xFFFF0000
     call _vga_clear_screen
 
@@ -275,6 +257,29 @@ _protect_entry:
     mov edi, 44
     mov esi, _IHTMouseHandler
     call _kernel_set_interrupt_handler
+
+    ; 폰트 그리기 테스트
+    mov ecx, 0
+.font_test:
+    mov esi, font
+    mov eax, 16
+    mul ecx
+    add esi, eax
+    ; 다음 그릴 폰트
+
+    mov eax, 8
+    mul ecx
+    ; x 좌표 위치
+
+    push 0
+    push eax
+    push 0xFFFFFFFF
+    push esi
+    call _draw_font
+
+    inc ecx
+    cmp ecx, 36
+    jne .font_test
 
 ;--------------------------------------------------------
 ; 커널 종료 및 성공 & 실패 메시지 출력

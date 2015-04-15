@@ -20,6 +20,7 @@ _entry:
     ; 기본 라이브러리의 경우 부트로더쪽의 함수를 그대로 가져와 사용한다.
 
     ; Kernel Library
+    %include "kernel.library.print.asm"
     %include "kernel.library.string.asm"
     ; string library
     %include "kernel.vbe.asm"
