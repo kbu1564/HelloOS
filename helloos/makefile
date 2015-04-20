@@ -27,6 +27,8 @@ Q = @
 OS_DETECTING     = $(shell uname -s)
 DRIVE_NUMBER     = $(shell mount | grep OSUSB | awk '{split($$0,arr," "); print arr[3];}')
 DRIVE_NUMBER_DEV = $(shell mount | grep OSUSB | awk '{split($$0,arr," "); print arr[1];}')
+# cygwin 에서 빌드하는 경우 설치를 위한 드라이브 번호 지정
+#DRIVE_NAME      = E
 
 ifeq ($(OS_DETECTING), Darwin)
 	# mac osx not supported
@@ -41,8 +43,8 @@ else
     # linux or cygwin
     ifneq ($(OS_DETECTING), Linux)
         # window cygwin
-        DRIVE_NUMBER := /cygdrive/h
-        DRIVE_NUMBER_DEV := H:
+        DRIVE_NUMBER := /cygdrive/$(DRIVE_NAME)
+        DRIVE_NUMBER_DEV := $(DRIVE_NAME):
         SUDO := 
     endif
 

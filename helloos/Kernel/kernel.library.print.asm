@@ -1,5 +1,6 @@
 ; NULL 문자를 만날때 까지 출력합니다.
 ; ENTER 즉 개행 문자를 \n 으로 정의 합니다.
+; void print32(const char* str, BYTE colorCode);
 _print32:
     push ebp
     mov ebp, esp

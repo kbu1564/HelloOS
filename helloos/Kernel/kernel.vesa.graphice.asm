@@ -76,18 +76,33 @@ _draw_font:
     popa
     mov esp, ebp
     pop ebp
-    ret 8
+    ret 16
 
-; 문자 렌더링 함수
-_draw_text:
-  push ebp
-  mov ebp, esp
-  pusha
+; 폰트 그리기 테스트
+_draw_font_test:
+    mov ecx, 0
+.font_test:
+    mov esi, font
+    mov eax, 16
+    mul ecx
+    add esi, eax
+    ; 다음 그릴 폰트
 
-  popa
-  mov esp, ebp
-  pop ebp
-  ret
+    mov eax, 8
+    mul ecx
+    ; x 좌표 위치
+
+    push 0
+    push eax
+    push 0xFFFFFFFF
+    push esi
+    call _draw_font
+
+    inc ecx
+    cmp ecx, 62
+    jne .font_test
+
+    ret
 
 ; push Y좌표
 ; push X좌표
@@ -137,4 +152,52 @@ _draw_cursor:
     popa
     mov esp, ebp
     pop ebp
-    ret 8
+    ret 16
+
+; NULL 문자를 만날때 까지 출력합니다.
+; ENTER 즉 개행 문자를 \n 으로 정의 합니다.
+; void print32_gui(const char* str, int colorCode, int x, int y);
+_print32_gui:
+    push ebp
+    mov ebp, esp
+    pusha
+
+    mov edi, dword [ebp+8]
+    ; 출력할 메시지
+    mov esi, dword [ebp+16]
+    ; 출력 x 좌표
+    mov ecx, 16
+    ; 폰트 크기
+.loop:
+    xor eax, eax
+    mov al, byte [edi]
+    test al, al
+    jz .end
+    ; NULL 체크후 종료
+
+    cmp al, '&'
+    jae .chk
+.chk:
+    cmp al, 'z'
+    ja .endloop
+
+    sub al, '&'
+    mul ecx
+    add eax, font.26h
+
+    push dword [ebp+20]
+    push esi
+    push dword [ebp+12]
+    push eax
+    call _draw_font
+.endloop:
+    add esi, 8
+    inc edi
+    ; 글씨 크기만큼 다음 위치로 이동
+    jmp .loop
+
+.end:
+    popa
+    mov esp, ebp
+    pop ebp
+    ret 16

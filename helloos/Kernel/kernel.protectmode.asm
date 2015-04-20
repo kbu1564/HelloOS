@@ -36,12 +36,10 @@ _entry:
     %include "kernel.interrupt.asm"
     ; 인터럽트 관련 처리 함수
     %include "kernel.interrupt.handler.asm"
-    ; Device Driver Function Table
+    ; Resource
     %include "./Resource/kernel.mouse.asm"
     %include "./Resource/kernel.font.asm"
-    ; Resource
-
-_device_function_table:
+    ; Device Driver Function Table
     %include "./Interrupt/kernel.keyboard.asm"
     %include "./Interrupt/kernel.mouse.asm"
 
@@ -63,7 +61,7 @@ _global_variables:
     VbeSupportVersionMessage:   db 'VBE Support Version -------------- ', 0x0A, 0
     ; 그래픽 모드 지원 버전 체크 메시지
     KeyboardActiveMessage:      db 'Keyboard Active Status ----------- ', 0x0A, 0
-    MouseActiveMessage:         db 'Mouse Active Status -------------- ', 0x0A, 0
+    MouseActiveMessage:         db "Mouse Active Status -------------- ", 0x0A, 0
     ; 각종 디바이스 초기화 상태 메시지
 ;----------------------------------------------
 ; 보호모드 진입
@@ -206,7 +204,7 @@ _protect_entry:
     call _kernel_load_tss
     ; TSS 설정
 
-    mov ebx, 0xFFFF0000
+    mov ebx, 0xFFFFFF
     call _vga_clear_screen
 
     ; 각종 디바이스 활성화
@@ -229,6 +227,12 @@ _protect_entry:
     jmp .info_true
 .kbd_act_true:
     ; 키보드 디바이스 활성화 완료
+    push 5
+    push 5
+    push 0x000000
+    push KeyboardActiveMessage
+    call _print32_gui
+
     ; Handler 등록
     mov edi, 33
     mov esi, _IHTKeyboardHandler
@@ -253,33 +257,16 @@ _protect_entry:
     jmp .info_true
 .mus_act_true:
     ; 마우스 디바이스 활성화 완료
+    push 21
+    push 5
+    push 0x000000
+    push MouseActiveMessage
+    call _print32_gui
+
     ; Handler 등록
     mov edi, 44
     mov esi, _IHTMouseHandler
     call _kernel_set_interrupt_handler
-
-    ; 폰트 그리기 테스트
-    mov ecx, 0
-.font_test:
-    mov esi, font
-    mov eax, 16
-    mul ecx
-    add esi, eax
-    ; 다음 그릴 폰트
-
-    mov eax, 8
-    mul ecx
-    ; x 좌표 위치
-
-    push 0
-    push eax
-    push 0xFFFFFFFF
-    push esi
-    call _draw_font
-
-    inc ecx
-    cmp ecx, 62
-    jne .font_test
 
 ;--------------------------------------------------------
 ; 커널 종료 및 성공 & 실패 메시지 출력

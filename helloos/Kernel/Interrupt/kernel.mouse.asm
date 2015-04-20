@@ -2,8 +2,7 @@
 ;
 ; 마우스 디바이스 활성화 함수
 _IHTMouseInitialize:
-    push edx
-    push ecx
+    pusha
     cli
 
     mov dl, 0x64
@@ -68,8 +67,7 @@ _IHTMouseInitialize:
 
 .end:
     sti
-    pop ecx
-    pop edx
+    popa
     ret
 
 ; 마우스 인터럽트 활성화 함수
@@ -170,6 +168,7 @@ _IHTMouseInputBufferFull:
 
 ; 마우스 디바이스 핸들러 함수
 _IHTMouseHandler:
+    pusha
     xor eax, eax
 
     mov dl, 0x64
@@ -205,6 +204,7 @@ _IHTMouseHandler:
     push eax
     call _print_hex32
 .end:
+    popa
     ret
 
 MouseCodeMessage   db 'MouseCode Number : ', 0
