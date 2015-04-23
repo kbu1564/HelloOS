@@ -148,3 +148,4 @@ _IHTKeyboardHandler:
     ret
 
 KeyboardCodeMessage db 'KeyCode Number : ', 0
+KeyboardDataQueue   dd 0x00805000

@@ -15,6 +15,7 @@ _entry:
     ; Kernel Library
     %include "kernel.library.print.asm"
     %include "kernel.library.debug.asm"
+    %include "kernel.library.queue.asm"
     ; 화면 출력 함수
     %include "kernel.vbe.header.asm"
     ; Vedio BIOS Extension Library
@@ -215,6 +216,10 @@ _protect_entry:
     push KeyboardActiveMessage
     call _print32
 
+    push dword [KeyboardDataQueue]
+    call _queue_init
+    ; 시스템 키보드 큐 초기화
+
     call _IHTKeyboardInitialize
     ; 키보드 활성화
 
@@ -245,6 +250,10 @@ _protect_entry:
     push MouseActiveMessage
     call _print32
 
+    push dword [MouseDataQueue]
+    call _queue_init
+    ; 시스템 마우스 큐 초기화
+
     call _IHTMouseInitialize
     ; 마우스 활성화
 
@@ -273,14 +282,6 @@ _protect_entry:
 ;--------------------------------------------------------
 .end_kernel:
     hlt
-
-    push 48
-    push 5
-    push 0xFFFFFF
-    push MouseCodeMessage
-    call _print32_gui
-    ; 인터럽트 발생 여부 테스트
-
     jmp .end_kernel
 
 .info_false:

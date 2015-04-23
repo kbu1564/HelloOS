@@ -185,28 +185,64 @@ _IHTMouseHandler:
 
     inc byte [MousePositionCount]
 
-    push 48
-    push 5
-    push 0x000000
-    push MouseCodeMessage
-    call _print32_gui
+    push dword [MouseDataQueue]
+    push eax
+    call _queue_push
+    ; 큐에 데이터 넣기
 
-    push 100
-    push 100
-    push 0x00000000
+    cmp byte [MousePositionCount], 3
+    jne .end
+    ; 3바이트가 모여서 하나의 패킷이 완성된다
+
+    mov byte [MousePositionCount], 0
+    ; 패킷 체크용 변수 초기화
+
+    push dword [MouseDataQueue]
+    call _queue_pop
+    mov edx, eax
+    ; 마우스 상태정보 
+    push dword [MouseDataQueue]
+    call _queue_pop
+    mov esi, eax
+    ; 마우스 x 이동량 
+    push dword [MouseDataQueue]
+    call _queue_pop
+    mov edi, eax
+    ; 마우스 y 이동량
+
+    add dword [MousePaintPosition.x], 1
+    add dword [MousePaintPosition.y], 1
+
+    ;push dword [MouseClearPosition.y]
+    ;push dword [MouseClearPosition.x]
+    ;push 0xFFFFFF
+    ;push cursor.default
+    ;call _draw_cursor
+    ; 이전 위치 그리기 정보 제거
+
+    push dword [MousePaintPosition.y]
+    push dword [MousePaintPosition.x]
+    push 0x000000
     push cursor.default
     call _draw_cursor
+    ; 새로운 위치에 마우스 그리기
 
-    push 22
-    push 17
-    push eax
-    call _print_hex32
+    mov eax, dword [MousePaintPosition.x]
+    mov dword [MouseClearPosition.x], eax
+    mov eax, dword [MousePaintPosition.y]
+    mov dword [MouseClearPosition.y], eax
 .end:
     popa
     ret
 
-MouseCodeMessage   db 'MouseCode Number : ', 0
+MouseDataQueue     dd 0x00804000
 MousePositionCount db 0x00
-MousePosition:
+
+MouseClearPosition:
+; 움직이기 바로 직전 좌표
+          .x  dw 0x0000
+          .y  dw 0x0000
+MousePaintPosition:
+; 움직인 좌표
           .x  dw 0x0000
           .y  dw 0x0000
