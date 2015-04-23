@@ -185,13 +185,11 @@ _IHTMouseHandler:
 
     inc byte [MousePositionCount]
 
-    push 22
-    push 0
-    call _print32_gotoxy
-
-    push 0x07
+    push 48
+    push 5
+    push 0x000000
     push MouseCodeMessage
-    call _print32
+    call _print32_gui
 
     push 100
     push 100

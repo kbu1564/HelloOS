@@ -273,6 +273,14 @@ _protect_entry:
 ;--------------------------------------------------------
 .end_kernel:
     hlt
+
+    push 48
+    push 5
+    push 0xFFFFFF
+    push MouseCodeMessage
+    call _print32_gui
+    ; 인터럽트 발생 여부 테스트
+
     jmp .end_kernel
 
 .info_false:

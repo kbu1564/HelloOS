@@ -3,7 +3,7 @@
 ;
 ; Interrupt Handler Table 을 IHT 로 정의 한다.
 ; HelloOS 에서는 Interrupt Vector Table을 한번 더 추상화 함으로써
-; 추후 다른 시스템에서는 이 IHT 테이블만 마추어 주면 정상 작동하도록 한다.
+; 추후 다른 시스템에서는 이 IHT 테이블만 일치시켜주면 정상 작동하도록 한다.
 DFT:
     .start db 0xFF
     .size  dd (DFT.end - DFT.start)

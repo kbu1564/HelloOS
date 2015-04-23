@@ -30,25 +30,33 @@ DRIVE_NUMBER_DEV = $(shell mount | grep OSUSB | awk '{split($$0,arr," "); print 
 # cygwin 에서 빌드하는 경우 설치를 위한 드라이브 번호 지정
 #DRIVE_NAME      = E
 
-ifeq ($(OS_DETECTING), Darwin)
-	# mac osx not supported
-    all: not_support
+EMPTY = 
+ifeq ($(DRIVE_NAME), $(EMPTY))
+    all: need_parameter
 
-    not_support:
-		$(Q) echo "This Operating System is not supported!!"
-		$(Q) echo ""
-		$(Q) echo "Operating System Type : $(OS_DETECTING)"
-
+    need_parameter:
+		$(Q) echo "Useage : make DRIVE_NAME=input_your_usb_drive_name [compile|run]"
 else
-    # linux or cygwin
-    ifneq ($(OS_DETECTING), Linux)
-        # window cygwin
-        DRIVE_NUMBER := /cygdrive/$(DRIVE_NAME)
-        DRIVE_NUMBER_DEV := $(DRIVE_NAME):
-        SUDO := 
-    endif
+    ifeq ($(OS_DETECTING), Darwin)
+        # mac osx not supported
+        all: not_support
 
-    all: compile clean writer
+        not_support:
+            $(Q) echo "This Operating System is not supported!!"
+            $(Q) echo ""
+            $(Q) echo "Operating System Type : $(OS_DETECTING)"
+
+    else
+        # linux or cygwin
+        ifneq ($(OS_DETECTING), Linux)
+            # window cygwin
+            DRIVE_NUMBER := /cygdrive/$(DRIVE_NAME)
+            DRIVE_NUMBER_DEV := $(DRIVE_NAME):
+            SUDO := 
+        endif
+
+        all: compile clean writer
+    endif
 endif
 
 INCLUDE_OPTIONS = REMOVE=$(REMOVE) CP=$(CP)
