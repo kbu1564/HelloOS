@@ -434,6 +434,33 @@ _kernel_exception_handler:
     push eax
     call _print_hex32
 
+    ;---------------------------------------------
+    ; GUI 버전의 Interrupt Exception Message
+    ;---------------------------------------------
+    push 751
+    push 5
+    push 0x000000
+    push er_msg
+    call _print32_gui
+
+    push 751
+    push 6
+    push 0x000000
+    push er_msg
+    call _print32_gui
+
+    push 750
+    push 5
+    push 0xFF0000
+    push er_msg
+    call _print32_gui
+
+    push 750
+    push 6
+    push 0xFF0000
+    push er_msg
+    call _print32_gui
+
     ; 이곳에서 등록된 인터럽트 핸들러가 실행되도록 한다.
     mov eax, edi
     mov edx, DFT + 5

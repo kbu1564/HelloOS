@@ -183,60 +183,156 @@ _IHTMouseHandler:
     jz .end
     ; 마우스 데이터 인지 체크
 
-    inc byte [MousePositionCount]
-
+    ;----------------------------------------------------
+    ; 데이터 처리
+    ;----------------------------------------------------
     push dword [MouseDataQueue]
     push eax
     call _queue_push
-    ; 큐에 데이터 넣기
 
+    ; 후처리
+    inc byte [MousePositionCount]
     cmp byte [MousePositionCount], 3
     jne .end
     ; 3바이트가 모여서 하나의 패킷이 완성된다
 
-    mov byte [MousePositionCount], 0
-    ; 패킷 체크용 변수 초기화
+    ;--------------------------------------------------
+    ; Mouse input data
+    ;--------------------------------------------------
+    ; 참고 : http://wiki.osdev.org/Mouse_Input
+    ;--------------------------------------------------
 
     push dword [MouseDataQueue]
     call _queue_pop
+    ; 마우스 상태값
     mov edx, eax
-    ; 마우스 상태정보 
+    ; 상태값 백업
+
+    mov byte [MouseLeftButtonDown], 0x00
+    mov byte [MouseRightButtonDown], 0x00
+    ; 상태값 초기화
+.left_btn_check:
+    test edx, 0x01
+    jz .right_btn_check
+
+    mov byte [MouseLeftButtonDown], 0x01
+    ; left button 상태 표시
+.right_btn_check:
+    test edx, 0x02
+    jz .xsigned_check
+
+    mov byte [MouseRightButtonDown], 0x01
+    ; right button 상태 표시
+
+.xsigned_check:
     push dword [MouseDataQueue]
     call _queue_pop
-    mov esi, eax
-    ; 마우스 x 이동량 
+    ; x 좌표값
+    and eax, 0xFF
+
+    test edx, 0x10
+    ; x 음수 체크
+    jz .xsigned
+
+    ; 음수 일 경우 수행되는 코드
+    mov ecx, eax
+    mov eax, 256
+    sub eax, ecx
+
+    sub word [MousePaintPosition.x], ax
+    ; x 좌표 셋팅
+
+    jmp .ysigned_check
+.xsigned:
+    ; 양수 일 경우 수행되는 코드
+    add word [MousePaintPosition.x], ax
+    ; x 좌표 셋팅
+
+.ysigned_check:
     push dword [MouseDataQueue]
     call _queue_pop
-    mov edi, eax
-    ; 마우스 y 이동량
+    ; y 좌표값
+    and eax, 0xFF
 
-    add dword [MousePaintPosition.x], 1
-    add dword [MousePaintPosition.y], 1
+    test edx, 0x20
+    ; y 음수 체크
+    jz .ysigned
 
-    ;push dword [MouseClearPosition.y]
-    ;push dword [MouseClearPosition.x]
-    ;push 0xFFFFFF
-    ;push cursor.default
-    ;call _draw_cursor
+    ; 음수 일 경우 수행되는 코드
+    mov ecx, eax
+    mov eax, 256
+    sub eax, ecx
+
+    add word [MousePaintPosition.y], ax
+    ; y 좌표 셋팅
+
+    jmp .draw_cursor
+.ysigned:
+    ; 양수 일 경우 수행되는 코드
+    sub word [MousePaintPosition.y], ax
+    ; y 좌표 셋팅
+
+    ;--------------------------------------------------
+    ; 2015-04-27
+    ; 아직 x축에 대한 처리가 완벽하지 않음
+    ;--------------------------------------------------
+    ; 마우스가 화면 영역 밖으로 넘어가지 않도록 처리
+    ; 최상위 비트가 1인경우 음수로 간주한다.
+.outside_x:
+; x좌표 처리
+    cmp word [MousePaintPosition.x], 0x8000
+    ja .draw_outside_x
+    jmp .outside_y
+.draw_outside_x:
+    mov word [MousePaintPosition.x], 0
+
+.outside_y:
+; y좌표 처리
+    cmp word [MousePaintPosition.y], 0x8000
+    ja .draw_outside_y
+    jmp .draw_cursor
+.draw_outside_y:
+    mov word [MousePaintPosition.y], 0
+
+.draw_cursor:
+    xor eax, eax
+    mov ax, word [MouseClearPosition.y]
+    push eax
+    mov ax, word [MouseClearPosition.x]
+    push eax
+    push 0xFFFFFF
+    push cursor.default
+    call _draw_cursor
     ; 이전 위치 그리기 정보 제거
 
-    push dword [MousePaintPosition.y]
-    push dword [MousePaintPosition.x]
+    xor eax, eax
+    mov ax, word [MousePaintPosition.y]
+    push eax
+    mov ax, word [MousePaintPosition.x]
+    push eax
     push 0x000000
     push cursor.default
     call _draw_cursor
     ; 새로운 위치에 마우스 그리기
 
-    mov eax, dword [MousePaintPosition.x]
-    mov dword [MouseClearPosition.x], eax
-    mov eax, dword [MousePaintPosition.y]
-    mov dword [MouseClearPosition.y], eax
+    ; 좌표 백업
+    mov ax, word [MousePaintPosition.x]
+    mov word [MouseClearPosition.x], ax
+    mov ax, word [MousePaintPosition.y]
+    mov word [MouseClearPosition.y], ax
+
+    mov byte [MousePositionCount], 0
+    ; 패킷 체크용 변수 초기화
 .end:
     popa
     ret
 
-MouseDataQueue     dd 0x00804000
-MousePositionCount db 0x00
+; 디버깅용 메시지
+MouseLeftButtonDown  db 0x00
+MouseRightButtonDown db 0x00
+; 마우스 디바이스 드라이버 관련 주요 변수
+MouseDataQueue       dd 0x00804000
+MousePositionCount   db 0x00
 
 MouseClearPosition:
 ; 움직이기 바로 직전 좌표

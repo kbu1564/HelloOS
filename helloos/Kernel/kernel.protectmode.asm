@@ -232,12 +232,6 @@ _protect_entry:
     jmp .info_true
 .kbd_act_true:
     ; 키보드 디바이스 활성화 완료
-    push 5
-    push 5
-    push 0x000000
-    push KeyboardActiveMessage
-    call _print32_gui
-
     ; Handler 등록
     mov edi, 33
     mov esi, _IHTKeyboardHandler
@@ -266,12 +260,6 @@ _protect_entry:
     jmp .info_true
 .mus_act_true:
     ; 마우스 디바이스 활성화 완료
-    push 21
-    push 5
-    push 0x000000
-    push MouseActiveMessage
-    call _print32_gui
-
     ; Handler 등록
     mov edi, 44
     mov esi, _IHTMouseHandler

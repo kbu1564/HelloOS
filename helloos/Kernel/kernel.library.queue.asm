@@ -30,16 +30,18 @@ _queue_push:
     mov esi, dword [ebp + 12]
     mov edi, esi
     ; start address
-    mov edx, dword [ebp + 8]
-    ; input data
 
     mov eax, dword [esi]
     mov ecx, 4
     mul ecx
+    ; front 계산
 
     add edi, eax
+    add edi, 8
     ; 다음 값이 저장될 위치 구하기
 
+    mov edx, dword [ebp + 8]
+    ; input data
     mov dword [edi], edx
     inc dword [esi]
     ; 값 push 후 front++
@@ -56,7 +58,10 @@ _queue_push:
 _queue_pop:
     push ebp
     mov ebp, esp
-    pusha
+    push esi
+    push edi
+    push ecx
+    push edx
 
     xor eax, eax
     push dword [ebp + 8]
@@ -76,13 +81,17 @@ _queue_pop:
     mul ecx
 
     add edi, eax
+    add edi, 8
     ; 다음 값이 꺼내질 위치 구하기
 
     mov eax, dword [edi]
     inc dword [esi + 4]
     ; 데이터 pop
 .end:
-    popa
+    pop edx
+    pop ecx
+    pop edi
+    pop esi
     mov esp, ebp
     pop ebp
     ret 4
