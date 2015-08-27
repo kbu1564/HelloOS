@@ -42,7 +42,8 @@ ifeq ($(DRIVE_NAME), $(EMPTY))
 		$(Q) echo "example : make DRIVE_NAME=OSUSB [compile|run]"
 else
     ifeq ($(OS_DETECTING), Darwin)
-		DRIVE_NUMBER_DEV := $(subst /dev/disk,/dev/rdisk,$(DRIVE_NUMBER_DEV))	
+		DRIVE_NUMBER_DEV := $(subst /dev/disk,/dev/rdisk,$(DRIVE_NUMBER_DEV))
+        all: compile clean writer
     else
         # linux or cygwin
         ifneq ($(OS_DETECTING), Linux)

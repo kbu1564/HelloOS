@@ -100,58 +100,50 @@ _kernel_init_paging:
     ; 페이징 자료구조 영역 초기화
 
     ;-----------------------------------------------------------
-    ; 커널 영역 할당 0x00000000 ~ 0x00200000
+    ; 커널 영역 할당 0x00000000 ~ 0xFF000000
     ;-----------------------------------------------------------
-    push 0x00000000
-    push 0x00000000
-    push (0x00200000-0x00000000)/0x1000
-    call _kernel_alloc
+    mov eax, 0xFF000000
+    .memory_mapping_loop:
+        mov ecx, eax
+        sub ecx, 0x00200000
 
-    ;-----------------------------------------------------------
-    ; 커널 영역 할당 0x00400000 ~ 0x00800000
-    ;-----------------------------------------------------------
-    push 0x00400000
-    push 0x00400000
-    push (0x00800000-0x00400000)/0x1000
-    call _kernel_alloc
+        push ecx
+        push ecx
+        push 0x200
+        call _kernel_alloc
 
-    ;-----------------------------------------------------------
-    ; 커널 영역 할당 0x00800000 ~ 0x00A00000
-    ;-----------------------------------------------------------
-    push 0x00800000
-    push 0x00800000
-    push (0x00A00000-0x00800000)/0x1000
-    call _kernel_alloc
+        sub eax, 0x00200000
+        jnz .memory_mapping_loop
 
-    test byte [VbeGraphicModeStart], 0x01
-    jz .enable_paging
-    ; 그래픽 모드로 시작하지 않는 경우 그래픽 영역 메모리를 활성화 하지 않는다.
-
-    ;-----------------------------------------------------------------------
-    ; 비디오 영역 할당
-    ;-----------------------------------------------------------------------
-    xor eax, eax
-    xor ecx, ecx
-    mov ax, word [xResolution]
-    mov cx, word [yResolution]
-    mul ecx
-    ; x * y
-    xor ecx, ecx
-    mov cl, byte [BitsPerPixel]
-    shr ecx, 3
-    ; bit -> byte
-    mul ecx
-    ; x * y * px
-    mov ecx, 0x1000
-    div ecx
-    ; 4KiB 단위로 필요한 용량 표현
-
-    push dword [PhysicalBasePointer]
-    push dword [PhysicalBasePointer]
-    push eax
-    call _kernel_alloc
-    ; 2015-03-23
-    ; Video Memory는 동일한 주소로 맵핑 시켜야 한다!!
+;    test byte [VbeGraphicModeStart], 0x01
+;    jz .enable_paging
+;    ; 그래픽 모드로 시작하지 않는 경우 그래픽 영역 메모리를 활성화 하지 않는다.
+;
+;    ;-----------------------------------------------------------------------
+;    ; 비디오 영역 할당
+;    ;-----------------------------------------------------------------------
+;    xor eax, eax
+;    xor ecx, ecx
+;    mov ax, word [xResolution]
+;    mov cx, word [yResolution]
+;    mul ecx
+;    ; x * y
+;    xor ecx, ecx
+;    mov cl, byte [BitsPerPixel]
+;    shr ecx, 3
+;    ; bit -> byte
+;    mul ecx
+;    ; x * y * px
+;    mov ecx, 0x1000
+;    div ecx
+;    ; 4KiB 단위로 필요한 용량 표현
+;
+;    push dword [PhysicalBasePointer]
+;    push dword [PhysicalBasePointer]
+;    push eax
+;    call _kernel_alloc
+;    ; 2015-03-23
+;    ; Video Memory는 동일한 주소로 맵핑 시켜야 한다!!
 .enable_paging:
     mov eax, dword [PageDirectory]
     mov cr3, eax
