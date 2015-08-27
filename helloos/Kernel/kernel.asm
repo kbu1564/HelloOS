@@ -76,9 +76,9 @@ _start:
     ; 그래픽 전환 작업을 하지 않는다.
 
     ; ax : 해상도에 해당하는 모드 번호
-    mov si, 1024
-    mov di, 768
-    mov dl, 32
+    mov si, VbeGraphicModeXResolution
+    mov di, VbeGraphicModeYResolution
+    mov dl, VbeGraphicModeColorBits
     call _get_vbe_mode
     ; 특정 해상도의 모드 번호를 구한다.
 

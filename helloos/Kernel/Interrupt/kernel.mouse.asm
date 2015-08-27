@@ -211,89 +211,97 @@ _IHTMouseHandler:
     mov byte [MouseLeftButtonDown], 0x00
     mov byte [MouseRightButtonDown], 0x00
     ; 상태값 초기화
+
+;---------------------------------------------------
 .left_btn_check:
     test edx, 0x01
     jz .right_btn_check
 
     mov byte [MouseLeftButtonDown], 0x01
     ; left button 상태 표시
+
 .right_btn_check:
     test edx, 0x02
-    jz .xsigned_check
+    jz .xpos_check
 
     mov byte [MouseRightButtonDown], 0x01
     ; right button 상태 표시
 
-.xsigned_check:
+;---------------------------------------------------
+.xpos_check:
+    xor eax, eax
     push dword [MouseDataQueue]
     call _queue_pop
-    ; x 좌표값
-    and eax, 0xFF
 
     test edx, 0x10
-    ; x 음수 체크
-    jz .xsigned
+    jz .xpos
 
-    ; 음수 일 경우 수행되는 코드
+    ; x 좌표가 최소 범위를 벗어나지 못 하도록 설정
     mov ecx, eax
     mov eax, 256
     sub eax, ecx
 
-    sub word [MousePaintPosition.x], ax
-    ; x 좌표 셋팅
+    cmp word [MousePaintPosition.x], ax
+    jnb .xpos_E1
 
-    jmp .ysigned_check
-.xsigned:
+    xor ax, ax
+    mov word [MousePaintPosition.x], 0
+.xpos_E1:
+    sub word [MousePaintPosition.x], ax
+    jmp .ypos_check
+
+.xpos:
+    ; x 좌표가 최대 범위를 벗어나지 못 하도록 설정
+    mov ecx, eax
+    add cx, word [MousePaintPosition.x]
+    cmp cx, word [xResolution]
+    jna .xpos_E2
+
+    mov ax, word [xResolution]
+    mov word [MousePaintPosition.x], 0
+.xpos_E2:
     ; 양수 일 경우 수행되는 코드
     add word [MousePaintPosition.x], ax
     ; x 좌표 셋팅
 
-.ysigned_check:
+;---------------------------------------------------
+.ypos_check:
+    xor eax, eax
     push dword [MouseDataQueue]
     call _queue_pop
-    ; y 좌표값
-    and eax, 0xFF
 
     test edx, 0x20
-    ; y 음수 체크
-    jz .ysigned
+    jz .ypos
 
-    ; 음수 일 경우 수행되는 코드
+    ; y 좌표가 최대 범위를 벋어나지 못 하도록 설정
     mov ecx, eax
     mov eax, 256
     sub eax, ecx
 
-    add word [MousePaintPosition.y], ax
-    ; y 좌표 셋팅
+    mov ecx, eax
+    add cx, word [MousePaintPosition.y]
+    cmp cx, word [yResolution]
+    jna .ypos_E1
 
+    mov ax, word [yResolution]
+    mov word [MousePaintPosition.y], 0
+.ypos_E1:
+    add word [MousePaintPosition.y], ax
     jmp .draw_cursor
-.ysigned:
+
+.ypos:
+    ; y 좌표가 최소 범위를 벗어나지 못 하도록 설정
+    cmp word [MousePaintPosition.y], ax
+    jnb .ypos_E2
+
+    xor ax, ax
+    mov word [MousePaintPosition.y], 0
+.ypos_E2:
     ; 양수 일 경우 수행되는 코드
     sub word [MousePaintPosition.y], ax
     ; y 좌표 셋팅
 
-    ;--------------------------------------------------
-    ; 2015-04-27
-    ; 아직 x축에 대한 처리가 완벽하지 않음
-    ;--------------------------------------------------
-    ; 마우스가 화면 영역 밖으로 넘어가지 않도록 처리
-    ; 최상위 비트가 1인경우 음수로 간주한다.
-.outside_x:
-; x좌표 처리
-    cmp word [MousePaintPosition.x], 0x8000
-    ja .draw_outside_x
-    jmp .outside_y
-.draw_outside_x:
-    mov word [MousePaintPosition.x], 0
-
-.outside_y:
-; y좌표 처리
-    cmp word [MousePaintPosition.y], 0x8000
-    ja .draw_outside_y
-    jmp .draw_cursor
-.draw_outside_y:
-    mov word [MousePaintPosition.y], 0
-
+;---------------------------------------------------
 .draw_cursor:
     xor eax, eax
     mov ax, word [MouseClearPosition.y]

@@ -2,6 +2,10 @@ VbeGraphicModeStart             db 0x01
 ; 그래픽 모드 시작 여부
 ; 1 : 그래픽 모드
 ; 0 : 텍스트 모드
+VbeGraphicModeXResolution       equ 1024
+VbeGraphicModeYResolution       equ 768
+VbeGraphicModeColorBits         equ 32
+
 VbeInfoState                    equ 0x7000
 VbeInfoLoadError                equ 0x004F
 
