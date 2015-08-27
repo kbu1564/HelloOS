@@ -25,8 +25,8 @@ Q = @
 #####################################################################
 # 운영체제 버전별 명령어 셋팅
 OS_DETECTING     = $(shell uname -s)
-DRIVE_NUMBER     = $(shell mount | grep OSUSB | awk '{split($$0,arr," "); print arr[3];}')
-DRIVE_NUMBER_DEV = $(shell mount | grep OSUSB | awk '{split($$0,arr," "); print arr[1];}')
+DRIVE_NUMBER     = $(shell mount | grep $(DRIVE_NAME) | awk '{split($$0,arr," "); print arr[3];}')
+DRIVE_NUMBER_DEV = $(shell mount | grep $(DRIVE_NAME) | awk '{split($$0,arr," "); print arr[1];}')
 # cygwin 에서 빌드하는 경우 설치를 위한 드라이브 번호 지정
 #DRIVE_NAME      = E
 
@@ -35,17 +35,14 @@ ifeq ($(DRIVE_NAME), $(EMPTY))
     all: need_parameter
 
     need_parameter:
+		$(Q) echo "NASM GUI Operating System HelloOS (@kbu1564) (http://github.com/kbu1564/HelloOS.git)"
+		$(Q) echo "LICENSE : MIT"
+		$(Q) echo ""
 		$(Q) echo "Useage : make DRIVE_NAME=input_your_usb_drive_name [compile|run]"
+		$(Q) echo "example : make DRIVE_NAME=OSUSB [compile|run]"
 else
     ifeq ($(OS_DETECTING), Darwin)
-        # mac osx not supported
-        all: not_support
-
-        not_support:
-            $(Q) echo "This Operating System is not supported!!"
-            $(Q) echo ""
-            $(Q) echo "Operating System Type : $(OS_DETECTING)"
-
+		DRIVE_NUMBER_DEV := $(subst /dev/disk,/dev/rdisk,$(DRIVE_NUMBER_DEV))	
     else
         # linux or cygwin
         ifneq ($(OS_DETECTING), Linux)
@@ -54,7 +51,6 @@ else
             DRIVE_NUMBER_DEV := $(DRIVE_NAME):
             SUDO := 
         endif
-
         all: compile clean writer
     endif
 endif
@@ -78,7 +74,7 @@ writer:
 	
 # 설치 된 내용을 바탕으로 실행
 run:
-	$(SUDO) qemu-system-x86_64 -m 64 -hda $(DRIVE_NUMBER_DEV) -localtime -M pc
+	$(SUDO) qemu-system-x86_64 -m 64 -hda $(DRIVE_NUMBER_DEV)
 
 # 기존의 설치 본 전부 제거
 clean:

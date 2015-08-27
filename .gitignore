@@ -1,3 +1,4 @@
 # build file
+*.bin
 *.img
 *.sys
