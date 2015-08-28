@@ -137,6 +137,15 @@ _draw_cursor:
             test word [edi], dx
             jz .end_px
             mov ebx, dword [ebp + 12]
+
+            ; Masking
+            mov edx, 16
+            sub edx, ecx
+            add edx, dword [ebp + 16]
+
+            cmp word [xResolution], dx
+            jbe .end_px
+
             mov dword [esi], ebx
         .end_px:
             add esi, 4
