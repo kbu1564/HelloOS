@@ -27,8 +27,6 @@ Q = @
 OS_DETECTING     = $(shell uname -s)
 DRIVE_NUMBER     = $(shell mount | grep $(DRIVE_NAME) | awk '{split($$0,arr," "); print arr[3];}')
 DRIVE_NUMBER_DEV = $(shell mount | grep $(DRIVE_NAME) | awk '{split($$0,arr," "); print arr[1];}')
-# cygwin 에서 빌드하는 경우 설치를 위한 드라이브 번호 지정
-#DRIVE_NAME      = E
 
 EMPTY = 
 ifeq ($(DRIVE_NAME), $(EMPTY))
