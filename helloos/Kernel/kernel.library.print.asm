@@ -1,10 +1,35 @@
+; 텍스트 모드 화면을 초기화 합니다.
+_clear:
+    push ebp
+    mov ebp, esp
+    pusha
+
+    mov ax, VideoDescriptor
+    mov es, ax
+
+    mov ecx, 80 * 25 * 2
+    xor edi, edi
+.L1:
+    mov byte [es:edi], 0
+    inc edi
+    loop .L1
+
+    popa
+    mov esp, ebp
+    pop ebp
+    ret
+
 ; NULL 문자를 만날때 까지 출력합니다.
 ; ENTER 즉 개행 문자를 \n 으로 정의 합니다.
-; void print32(const char* str, BYTE colorCode);
+; void print32(const char* str, BYTE colorCode, const int x, const int y);
 _print32:
     push ebp
     mov ebp, esp
     pusha
+
+    push dword [ebp+20]
+    push dword [ebp+16]
+    call _print32_gotoxy
 
     mov ax, VideoDescriptor
     mov es, ax
@@ -44,7 +69,7 @@ _print32:
     popa
     mov esp, ebp
     pop ebp
-    ret 8
+    ret 16
 
 ; 출력 포인터 값을 특정 위치로 이동시키는 함수
 ; void _print32_gotoxy(int x, int y);

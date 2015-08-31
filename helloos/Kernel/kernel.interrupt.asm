@@ -370,13 +370,15 @@ _kernel_interrupt_handler:
     mov eax, dword [_print32_location]
     push eax
 
+;    push 24
+;    push 0
+;    call _print32_gotoxy
+
     push 24
     push 0
-    call _print32_gotoxy
-
     push 0x07
     push in_msg
-    call _print32
+    call _call_print
 
     push 24
     push 12
@@ -410,10 +412,12 @@ _kernel_interrupt_handler:
 ; edi : exception number
 ; esi : error code
 _kernel_exception_handler:
+;    push 23
+;    push 0
+;    call _print32_gotoxy
+
     push 23
     push 0
-    call _print32_gotoxy
-
     push 0x07
     push er_msg
     call _print32

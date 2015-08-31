@@ -37,6 +37,8 @@ _entry:
     %include "kernel.interrupt.asm"
     ; 인터럽트 관련 처리 함수
     %include "kernel.interrupt.handler.asm"
+    ; Call Vector Table
+    %include "kernel.call.table.asm"
     ; Resource
     %include "./Resource/kernel.mouse.asm"
     %include "./Resource/kernel.font.asm"
@@ -50,19 +52,19 @@ _global_variables:
     InfoTrueMessage:            db 'True', 0
     InfoFalseMessage:           db 'False', 0
     ; TRUE/ FALSE
-    KernelProtectModeMessage:   db 'Switching Kernel Protected Mode -- ', 0x0A, 0
+    KernelProtectModeMessage:   db 'Switching Kernel Protected Mode -- ', 0
     ; 커널 보호모드 진입 완료 메시지
-    A20SwitchingCheckMessage:   db 'A20 Switching Check -------------- ', 0x0A, 0
+    A20SwitchingCheckMessage:   db 'A20 Switching Check -------------- ', 0
     ; A20 스위칭 성공 여부에 따른 메시지
-    EnoughMemoryCheckMessage:   db '64MiB Physical Memory Check ------ ', 0x0A, 0
+    EnoughMemoryCheckMessage:   db '64MiB Physical Memory Check ------ ', 0
     ; 최소 64MiB 이상의 물리메모리인가에 따른 메시지
-    Paging32ModeMessage:        db '32bit None-PAE Paging Mode ------- ', 0x0A, 0
+    Paging32ModeMessage:        db '32bit None-PAE Paging Mode ------- ', 0
     ; 32bit 페이징 처리 완료 메시지
     ;------------------------------------------------------------------------------------
-    VbeSupportVersionMessage:   db 'VBE Support Version -------------- ', 0x0A, 0
+    VbeSupportVersionMessage:   db 'VBE Support Version -------------- ', 0
     ; 그래픽 모드 지원 버전 체크 메시지
-    KeyboardActiveMessage:      db 'Keyboard Active Status ----------- ', 0x0A, 0
-    MouseActiveMessage:         db "Mouse Active Status -------------- ", 0x0A, 0
+    KeyboardActiveMessage:      db 'Keyboard Active Status ----------- ', 0
+    MouseActiveMessage:         db 'Mouse Active Status -------------- ', 0
     ; 각종 디바이스 초기화 상태 메시지
 ;----------------------------------------------
 ; 보호모드 진입
@@ -73,11 +75,26 @@ _protect_entry:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    
+
+    ; GUI 모드 함수 등록
+    test byte [VbeGraphicModeStart], 0x01
+    jz .jmp_gui_func
+
+    mov dword [_cvt.clear], _vga_clear_screen
+    mov dword [_cvt.print], _call_print32_gui
+    ; function setting
+
+.jmp_gui_func:
+    mov ebx, 0xFFFFFF
+    call _call_clear
+    ; 화면 지우기
+
     ; 32bit Protected Mode 시작 엔트리 포인트 지점
+    push 0
+    push 0
     push 0x07
     push KernelProtectModeMessage
-    call _print32
+    call _call_print
     ; 보호모드 전환 메시지
 
     mov esi, 0
@@ -95,9 +112,11 @@ _protect_entry:
     call _test_a20_mode
     ; 이 부분에서 A20 기능의 활성화 여부를 테스트
 
+    push 1
+    push 0
     push 0x07
     push A20SwitchingCheckMessage
-    call _print32
+    call _call_print
     ; A20 스위칭 처리 메시지
 
     mov esi, 1
@@ -114,9 +133,11 @@ _protect_entry:
     call _kernel_is_enough_memory
     ; OS 실행에 필요한 최소한의 64MB 메모리가 존재하는지 체크
 
+    push 2
+    push 0
     push 0x07
     push EnoughMemoryCheckMessage
-    call _print32
+    call _call_print
 
     mov esi, 2
     cmp ax, 0
@@ -155,9 +176,11 @@ _protect_entry:
     ; 페이징 초기화, 활성화
     ; 실행된 순간 모든 주소는 논리주소로 해석됨...
 
+    push 3
+    push 0
     push 0x07
     push Paging32ModeMessage
-    call _print32
+    call _call_print
     ; 페이징 관련 메시지
 
     mov esi, 3
@@ -166,9 +189,11 @@ _protect_entry:
 .chk_paging_true:
     ; 페이징 기능 활성화 완료
 
+    push 4
+    push 0
     push 0x07
     push VbeSupportVersionMessage
-    call _print32
+    call _call_print
 
     mov ax, word [VbeVersion]
     and ax, 0x0200
@@ -205,16 +230,18 @@ _protect_entry:
     call _kernel_load_tss
     ; TSS 설정
 
-    mov ebx, 0xFFFFFF
-    call _vga_clear_screen
+;    mov ebx, 0xFFFFFF
+;    call _call_clear
 
     ; 각종 디바이스 활성화
     ;--------------------------------------------------------
     ; 키보드 디바이스 활성화
     ;--------------------------------------------------------
+    push 5
+    push 0
     push 0x07
     push KeyboardActiveMessage
-    call _print32
+    call _call_print
 
     push dword [KeyboardDataQueue]
     call _queue_init
@@ -240,9 +267,11 @@ _protect_entry:
     ;--------------------------------------------------------
     ; 마우스 디바이스 활성화
     ;--------------------------------------------------------
+    push 6
+    push 0
     push 0x07
     push MouseActiveMessage
-    call _print32
+    call _call_print
 
     push dword [MouseDataQueue]
     call _queue_init
@@ -273,27 +302,31 @@ _protect_entry:
     jmp .end_kernel
 
 .info_false:
+;    push esi
+;    push 36
+;    call _print32_gotoxy
+
     push esi
     push 36
-    call _print32_gotoxy
-
-    push 0x04
+    push 0xFF0004
     push InfoFalseMessage
-    call _print32
+    call _call_print
     jmp .end_kernel
 
 .info_true:
+;    push esi
+;    push 36
+;    call _print32_gotoxy
+
     push esi
     push 36
-    call _print32_gotoxy
-
-    push 0x0A
+    push 0x66990A
     push InfoTrueMessage
-    call _print32
-
-    inc esi
-    push esi
-    push 0
-    call _print32_gotoxy
-    ; 다음줄로 포인터 이동
+    call _call_print
+;
+;    inc esi
+;    push esi
+;    push 0
+;    call _print32_gotoxy
+;    ; 다음줄로 포인터 이동
     jmp edi

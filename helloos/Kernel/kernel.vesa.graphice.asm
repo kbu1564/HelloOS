@@ -163,6 +163,29 @@ _draw_cursor:
     pop ebp
     ret 16
 
+; Call Vector Table 에 등록될 GUI 모드에서의 print 함수
+; _print32_gui 함수와 호환성을 마추기 위한 디버깅용
+_call_print32_gui:
+    push ebp
+    mov ebp, esp
+    pusha
+
+    mov eax, dword [ebp+20]
+    shl eax, 4
+    push eax
+
+    mov eax, dword [ebp+16]
+    shl eax, 3
+    push eax
+    push dword [ebp+12]
+    push dword [ebp+8]
+    call _print32_gui
+
+    popa
+    mov esp, ebp
+    pop ebp
+    ret 16
+
 ; NULL 문자를 만날때 까지 출력합니다.
 ; ENTER 즉 개행 문자를 \n 으로 정의 합니다.
 ; void print32_gui(const char* str, int colorCode, int x, int y);

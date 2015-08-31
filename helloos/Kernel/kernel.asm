@@ -30,6 +30,8 @@ _entry:
     ; gdt table 정의
     %include "kernel.file.asm"
     ; Call Functions LoadLibrary
+
+    %include "kernel.call.table.asm"
 _global_filename:
     KernelProtectModeMemoryArea  equ 0x9000
     KernelProtectModeLoadingFail db  'kernel.protectmode(32bit) Loading Failure', 0
