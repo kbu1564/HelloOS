@@ -10,7 +10,16 @@ Develop Env tools : nasm, vim, qemu 2.3.x
 
 Install to MAC OSX
 ======
-Preparing... :)
+1. Install ```Git```
+2. git clone git://github.com/kbu1564/HelloOS.git
+3. insert to USB in your PC
+![2015-08-31 11 38 24](https://cloud.githubusercontent.com/assets/7445459/9581908/1c4d6cec-503d-11e5-9b03-41b6a60af28e.png)
+4. Install ```NASM```
+5. Move to helloos in your project directory: ```cd ~/Github/HelloOS/hello```
+6. Install HelloOS in your USB: ```make DRIVE_NAME=YOUR_USB_NAME```
+![2015-08-31 11 46 39](https://cloud.githubusercontent.com/assets/7445459/9581910/226ec6de-503d-11e5-9632-7a2656788c56.png)
+7. Execute HelloOS: ```make DRIVE_NAME=YOUR_USB_NAME run```
+![2015-08-31 11 46 57](https://cloud.githubusercontent.com/assets/7445459/9581913/26c993c6-503d-11e5-8894-70c0220c1679.png)
 
 Install to Windows
 ======
