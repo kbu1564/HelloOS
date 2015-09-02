@@ -39,7 +39,7 @@ gdt:
         dw 0xFFFF
         dw 0x0000
         db 0x00
-        db 10010010b    ; P DPL S TYPE
+        db 10010011b    ; P DPL S TYPE
         db 11001111b    ; G D/B L AVL SEGMENT_SIZE
         db 0x00
 

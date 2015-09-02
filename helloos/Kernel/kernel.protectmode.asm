@@ -76,6 +76,18 @@ _protect_entry:
     mov fs, ax
     mov gs, ax
 
+    call _init_pic
+    ; pic 초기화 수행
+
+    ;-------------------------------------------------------------
+    ; GDT, TSS 초기화
+    ;-------------------------------------------------------------
+    call _kernel_init_gdt_table
+    ; GDT 새로운 메모리 주소에 등록
+
+    call _kernel_load_gdt
+    ; GDT 로드
+
     ; GUI 모드 함수 등록
     test byte [VbeGraphicModeStart], 0x01
     jz .jmp_gui_func
@@ -149,18 +161,6 @@ _protect_entry:
     jmp .info_true
 .chk_mem_true:
     ; 64MiB 이상의 메모리가 확보되어 있음
-
-    call _init_pic
-    ; pic 초기화 수행
-
-    ;-------------------------------------------------------------
-    ; GDT, TSS 초기화
-    ;-------------------------------------------------------------
-    call _kernel_init_gdt_table
-    ; GDT 새로운 메모리 주소에 등록
-
-    call _kernel_load_gdt
-    ; GDT 로드
 
     ;-------------------------------------------------------------
     ; 페이징 및 인터럽트 초기화

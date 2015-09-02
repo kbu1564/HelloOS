@@ -1,3 +1,13 @@
+_print_hex32_gui:
+    push ebp
+    mov ebp, esp
+    pusha
+
+    popa
+    mov esp, ebp
+    pop ebp
+    ret 16
+
 ; 숫자값을 hex 형태로 출력하는 함수
 ; void _print_hex32(int y, int x, DWORD register);
 ; push 출력할 Y좌표 값

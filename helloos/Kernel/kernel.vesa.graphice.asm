@@ -8,7 +8,10 @@ _vga_clear_screen:
     push eax
     push ecx
 
-    mov esi, dword [PhysicalBasePointer]
+    mov ax, VGADescriptor
+    mov es, ax
+    xor esi, esi
+;    mov esi, dword [PhysicalBasePointer]
 
     xor eax, eax
     xor ecx, ecx
@@ -19,7 +22,7 @@ _vga_clear_screen:
 
     mov ecx, eax
     .clear_loop:
-        mov dword [esi], ebx
+        mov dword [es:esi], ebx
         add esi, 4
         loop .clear_loop
 
@@ -39,7 +42,10 @@ _draw_font:
     mov ebp, esp
     pusha
 
-    mov esi, dword [PhysicalBasePointer]
+    mov ax, VGADescriptor
+    mov es, ax
+    xor esi, esi
+
     mov eax, 4
     mul dword [ebp + 16]
     add esi, eax
@@ -61,7 +67,7 @@ _draw_font:
             test byte [edi], dl
             jz .end_px
             mov ebx, dword [ebp + 12]
-            mov dword [esi], ebx
+            mov dword [es:esi], ebx
         .end_px:
             add esi, 4
             loop .loop_px
@@ -115,7 +121,10 @@ _draw_cursor:
     mov ebp, esp
     pusha
 
-    mov esi, dword [PhysicalBasePointer]
+    mov ax, VGADescriptor
+    mov es, ax
+    xor esi, esi
+
     mov eax, 4
     mul dword [ebp + 16]
     add esi, eax
@@ -146,7 +155,7 @@ _draw_cursor:
             cmp word [xResolution], dx
             jbe .end_px
 
-            mov dword [esi], ebx
+            mov dword [es:esi], ebx
         .end_px:
             add esi, 4
             loop .loop_px
