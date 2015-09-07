@@ -109,6 +109,15 @@ _start:
   int 0x13
   jc .shutdown
 
+.success:
+  mov ax, 0
+  mov ds, ax
+  mov es, ax
+
+  mov si, 0x8000
+  jmp si
+
+.shutdown:
   ; 16bit -> 0xFFFF
   mov ax, 0xb800
   mov es, ax
@@ -117,8 +126,7 @@ _start:
   ; *((char*)0xb8000) = 'H';
   ; 0xb8001 -> (char)0x04 -> 1bite 쓰여짐!!
   ; *((char*)0xb8001) = 0x04;
-  mov si, HelloMsg
-
+  mov si, LoadMsg
   mov di, 0
 .print:
   ; cx = ch + cl
@@ -133,18 +141,11 @@ _start:
   add si, 1
   jmp .print
 
-.success:
-  mov ax, 0
-  mov ds, ax
-  mov es, ax
+.exit:
+  hlt
+  jmp .exit
 
-  mov si, 0x8000
-  jmp si
-
-.shutdown:
-  jmp .shutdown
-
-HelloMsg   db 'Hello, World!!', 0
+LoadMsg   db 'kernel.sys is not file and directory.', 0
 LoaderName db 'KERNEL  ', 'SYS'
 
 ;-----------------------------------------

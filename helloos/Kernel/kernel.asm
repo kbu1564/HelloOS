@@ -101,6 +101,8 @@ _start:
     mov cr0, eax
     ; 보호모드로 전환
 
+    lgdt [gdtr]
+
     jmp $+2
     nop
     nop
