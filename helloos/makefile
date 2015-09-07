@@ -41,7 +41,7 @@ ifeq ($(DRIVE_NAME), $(EMPTY))
 else
     ifeq ($(OS_DETECTING), Darwin)
 		DRIVE_NUMBER_DEV := $(subst /dev/disk,/dev/rdisk,$(DRIVE_NUMBER_DEV))
-        all: compile clean writer
+        all: compile clean bootwriter writer
     else
         # linux or cygwin
         ifneq ($(OS_DETECTING), Linux)
@@ -50,7 +50,7 @@ else
             DRIVE_NUMBER_DEV := $(DRIVE_NAME):
             SUDO := 
         endif
-        all: compile clean writer
+        all: compile clean bootwriter writer
     endif
 endif
 

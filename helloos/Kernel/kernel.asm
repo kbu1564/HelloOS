@@ -91,9 +91,6 @@ _start:
     cli
     ; 이 부분에서 32bit Protected Mode 로 전환할 준비를 한다.
 
-    lgdt [gdtr]
-    ; GDT 정보 로드
-
     ;-------------------------------------------
     ; 컨트롤 Register Setting
     ; PG, CD, NW, AM, WP, NE, ET, TS, EM, MP, PE
