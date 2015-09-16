@@ -1,13 +1,3 @@
-_print_hex32_gui:
-    push ebp
-    mov ebp, esp
-    pusha
-
-    popa
-    mov esp, ebp
-    pop ebp
-    ret 16
-
 ; 숫자값을 hex 형태로 출력하는 함수
 ; void _print_hex32(int y, int x, DWORD register);
 ; push 출력할 Y좌표 값
@@ -18,19 +8,8 @@ _print_hex32:
     mov ebp, esp
     pusha
 
-    mov ax, VideoDescriptor
-    mov es, ax
-    ; video memory
-
-    mov eax, [ebp+16]
-    mov ecx, 80
-    mul ecx
-    add eax, [ebp+12]
-    shl eax, 1
-    mov esi, eax
-    ; 라인수 계산하기
-
-    mov dword [es:esi], 0x04780430
+    mov esi, StrDumpData
+    mov dword [esi], 0x7830
     ; 0x 출력
     mov ah, 0x04
     ; 색상값 셋팅
@@ -63,9 +42,17 @@ _print_hex32:
     add al, 0x07
     ; 10 ~ 15
 .hex4bitPrint:
-    mov word [es:esi+4], ax
-    add esi, 2
+    mov byte [esi+2], al
+    add esi, 1
     loop .hex4bitLoop
+
+    mov byte [esi+2], 0
+
+    push dword [ebp + 16]
+    push dword [ebp + 12]
+    push 0xFF0004
+    push StrDumpData
+    call _call_print
 
     popa
     mov esp, ebp
@@ -83,17 +70,7 @@ _print_byte_dump32:
     mov ebp, esp
     pusha
 
-    mov ax, es
-    push ax
-    ; descriptor 백업
-
-    mov eax, [ebp+20]
-    mov ecx, 80
-    mul ecx
-    add eax, [ebp+16]
-    shl eax, 1
-    mov esi, eax
-    ; 라인수 계산하기
+    mov esi, StrDumpData
 
     xor edx, edx
     xor ax, ax
@@ -103,10 +80,6 @@ _print_byte_dump32:
     mov ecx, [ebp+12]
     shl ecx, 1
     ; ecx = ecx * 2
-
-    mov ax, VideoDescriptor
-    mov es, ax
-    ; video memory
 .for_loop:
     cmp edx, ecx
     je .for_end
@@ -139,10 +112,9 @@ _print_byte_dump32:
     jbe .hex1byteSpace
     ; di 값이 짝수라면 공백을 출력하지 않음
 
-    mov byte [es:esi], 0x20
-    mov byte [es:esi+1], 0x04
+    mov byte [esi], 0x20
     ; 공백 출력
-    add si, 2
+    add esi, 1
 .hex1byteSpace:
     cmp al, 10
     jae .hex4bitAtoF
@@ -154,20 +126,25 @@ _print_byte_dump32:
     add al, 0x37
     ; 10 ~ 15
 .hex4bitPrint:
-    mov byte [es:esi], al
-    mov byte [es:esi+1], 0x04
+    mov byte [esi], al
 
-    add si, 2
+    add esi, 1
     inc dx
 
     jmp .for_loop
+.for_end: 
+    mov byte [esi+2], 0
 
-.for_end:
-    pop ax
-    mov es, ax
-    ; descriptor 복구
+    push dword [ebp + 20]
+    push dword [ebp + 16]
+    push 0xFF0004
+    push StrDumpData
+    call _call_print
 
     popa
     mov esp, ebp
     pop ebp
     ret 16
+
+StrDumpData  equ 0x5300
+

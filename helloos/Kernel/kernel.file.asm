@@ -97,6 +97,8 @@ _load_library:
     ; 1클러스터 당 섹터 수
 
     ; RootDirectoryEntry는 1클러스터 단위로 존재
+    mov byte [DiskAddressPacket + 0], 16
+    mov byte [DiskAddressPacket + 1], 0
     mov word [DiskAddressPacket + 2], cx
     ; 읽어들일 섹터 수 : 1 cluster
     mov dword [DiskAddressPacket + 4], ClusterBinaryData

@@ -71,17 +71,23 @@ _back_trim:
     mov byte [di + 1], 0
 .copy:
     mov al, byte [si]
-    mov byte [di], 0
 
     cmp al, 0x20
-    je .copy_end
+    jne .copy_str
 
-    inc dx
-    mov byte [di], al
-.copy_end:
+    mov byte [di], 0
     dec di
     dec si
     loop .copy
+
+.copy_str:
+    mov al, byte [si]
+    mov byte [di], al
+
+    inc dx
+    dec di
+    dec si
+    loop .copy_str
 
     mov ax, dx
     pop dx
