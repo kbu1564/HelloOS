@@ -134,11 +134,9 @@ _IHTKeyboardHandler:
 
     push 23
     push 0
-    call _print32_gotoxy
-
-    push 0x07
+    push 0xFF0007
     push KeyboardCodeMessage
-    call _print32
+    call _call_print
 
     push 23
     push 17
@@ -149,3 +147,4 @@ _IHTKeyboardHandler:
 
 KeyboardCodeMessage db 'KeyCode Number : ', 0
 KeyboardDataQueue   dd 0x00805000
+

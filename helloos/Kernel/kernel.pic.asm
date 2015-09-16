@@ -3,7 +3,6 @@
 ; o port byte
 _out_port_byte:
     push edx
-    mov dh, 0
     out dx, al
     pop edx
     ret

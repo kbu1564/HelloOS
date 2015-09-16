@@ -16,6 +16,8 @@ _entry:
     %include "kernel.library.print.asm"
     %include "kernel.library.debug.asm"
     %include "kernel.library.queue.asm"
+    %include "kernel.library.string.asm"
+    %include "kernel.library.file.asm"
     ; 화면 출력 함수
     %include "kernel.vbe.header.asm"
     ; Vedio BIOS Extension Library
@@ -298,14 +300,155 @@ _protect_entry:
 ; 커널 종료 및 성공 & 실패 메시지 출력
 ;--------------------------------------------------------
 .end_kernel:
+    test byte [VbeGraphicModeStart], 0x01
+    jz .hlt_kernel
+
+    ; 마우스 그리기
+    cmp byte [MousePositionCount], 3
+    jna .hlt_kernel
+
+    ; 3바이트가 모여서 하나의 패킷이 완성된다
+    ;--------------------------------------------------
+    ; Mouse input data
+    ;--------------------------------------------------
+    ; 참고 : http://wiki.osdev.org/Mouse_Input
+    ;--------------------------------------------------
+
+    push dword [MouseDataQueue]
+    call _queue_pop
+    ; 마우스 상태값
+    mov edx, eax
+    ; 상태값 백업
+
+    mov byte [MouseLeftButtonDown], 0x00
+    mov byte [MouseRightButtonDown], 0x00
+    ; 상태값 초기화
+
+;---------------------------------------------------
+.left_btn_check:
+    test edx, 0x01
+    jz .right_btn_check
+
+    mov byte [MouseLeftButtonDown], 0x01
+    ; left button 상태 표시
+
+.right_btn_check:
+    test edx, 0x02
+    jz .xpos_check
+
+    mov byte [MouseRightButtonDown], 0x01
+    ; right button 상태 표시
+
+;---------------------------------------------------
+.xpos_check:
+    xor eax, eax
+    push dword [MouseDataQueue]
+    call _queue_pop
+
+    test edx, 0x10
+    jz .xpos
+
+    ; x 좌표가 최소 범위를 벗어나지 못 하도록 설정
+    mov ecx, eax
+    mov eax, 256
+    sub eax, ecx
+
+    cmp word [MousePaintPosition.x], ax
+    jnb .xpos_E1
+
+    xor ax, ax
+    mov word [MousePaintPosition.x], 0
+.xpos_E1:
+    sub word [MousePaintPosition.x], ax
+    jmp .ypos_check
+
+.xpos:
+    ; x 좌표가 최대 범위를 벗어나지 못 하도록 설정
+    mov ecx, eax
+    add cx, word [MousePaintPosition.x]
+    cmp cx, word [xResolution]
+    jna .xpos_E2
+
+    mov ax, word [xResolution]
+    mov word [MousePaintPosition.x], 0
+.xpos_E2:
+    ; 양수 일 경우 수행되는 코드
+    add word [MousePaintPosition.x], ax
+    ; x 좌표 셋팅
+
+;---------------------------------------------------
+.ypos_check:
+    xor eax, eax
+    push dword [MouseDataQueue]
+    call _queue_pop
+
+    test edx, 0x20
+    jz .ypos
+
+    ; y 좌표가 최대 범위를 벋어나지 못 하도록 설정
+    mov ecx, eax
+    mov eax, 256
+    sub eax, ecx
+
+    mov ecx, eax
+    add cx, word [MousePaintPosition.y]
+    cmp cx, word [yResolution]
+    jna .ypos_E1
+
+    mov ax, word [yResolution]
+    mov word [MousePaintPosition.y], 0
+.ypos_E1:
+    add word [MousePaintPosition.y], ax
+    jmp .draw_cursor
+
+.ypos:
+    ; y 좌표가 최소 범위를 벗어나지 못 하도록 설정
+    cmp word [MousePaintPosition.y], ax
+    jnb .ypos_E2
+
+    xor ax, ax
+    mov word [MousePaintPosition.y], 0
+.ypos_E2:
+    ; 양수 일 경우 수행되는 코드
+    sub word [MousePaintPosition.y], ax
+    ; y 좌표 셋팅
+
+;---------------------------------------------------
+.draw_cursor:
+    xor eax, eax
+    mov ax, word [MouseClearPosition.y]
+    push eax
+    mov ax, word [MouseClearPosition.x]
+    push eax
+    push 0xFFFFFF
+    push cursor.default
+    call _draw_cursor
+    ; 이전 위치 그리기 정보 제거
+
+    xor eax, eax
+    mov ax, word [MousePaintPosition.y]
+    push eax
+    mov ax, word [MousePaintPosition.x]
+    push eax
+    push 0x000000
+    push cursor.default
+    call _draw_cursor
+    ; 새로운 위치에 마우스 그리기
+
+    ; 좌표 백업
+    mov ax, word [MousePaintPosition.x]
+    mov word [MouseClearPosition.x], ax
+    mov ax, word [MousePaintPosition.y]
+    mov word [MouseClearPosition.y], ax
+
+    sub byte [MousePositionCount], 3
+    ; 패킷 체크용 변수 초기화
+
+.hlt_kernel:
     hlt
     jmp .end_kernel
 
 .info_false:
-;    push esi
-;    push 36
-;    call _print32_gotoxy
-
     push esi
     push 36
     push 0xFF0004
@@ -314,19 +457,10 @@ _protect_entry:
     jmp .end_kernel
 
 .info_true:
-;    push esi
-;    push 36
-;    call _print32_gotoxy
-
     push esi
     push 36
     push 0x66990A
     push InfoTrueMessage
     call _call_print
-;
-;    inc esi
-;    push esi
-;    push 0
-;    call _print32_gotoxy
-;    ; 다음줄로 포인터 이동
     jmp edi
+
