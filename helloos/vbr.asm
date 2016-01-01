@@ -78,11 +78,13 @@ main:               xor ax, ax
                     ; 읽은 RootDirEntry로 부터 loader.sys파일을 찾는다
                     mov di, DiskAddressPacket + 4
 
-.find:              mov cl, byte [di]
-                    cmp cl, 0xE5
+.find:              mov al, byte [di]
+                    cmp al, 0xE5
                     je .next
                     ; 만약 첫번째 바이트가 0xE5 ?? => 삭제된 파일
                     ; 삭제된게 아닐경우 파일이름 비교
+                    test al, al
+                    jz .failed
 
                     ; 이 부분이 실행된다는 것은 삭제된 파일이 아니라는 것이다.
                     mov cx, 8
