@@ -23,14 +23,6 @@ Install to MAC OSX
 7. Execute HelloOS: ```make DRIVE_NAME=YOUR_USB_NAME run```<br />
 ![2015-08-31 11 46 57](https://cloud.githubusercontent.com/assets/7445459/9581913/26c993c6-503d-11e5-8894-70c0220c1679.png)
 
-Install to Windows
-======
-Preparing... :)
-
-Install to Linux
-======
-Preparing... :)
-
 Introduce
 =======
 - The License of this project is MIT.
