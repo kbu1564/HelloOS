@@ -4,7 +4,7 @@
 jmp _start
 nop
 
-%include "loader.fat32.4GB.asm"
+%include "loader.fat32.8GB.asm"
 
 _start:
   xor ax, ax

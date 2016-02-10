@@ -305,7 +305,7 @@ _protect_entry:
 
     ; 마우스 그리기
     cmp byte [MousePositionCount], 3
-    jna .hlt_kernel
+    jb .hlt_kernel
 
     ; 3바이트가 모여서 하나의 패킷이 완성된다
     ;--------------------------------------------------

@@ -44,15 +44,14 @@ _IHTMouseInitialize:
 
             loop .L2
         .EL2:
-
         pop ecx
         ; counter 값 복구
 
         mov dl, 0x60
         call _in_port_byte
 
-        xor al, 0xFA
-        jz .success
+        cmp al, 0xFA
+        je .success
 
         loop .mus_ack_loop
         ; 다른 키가 입력 될 수 있으니 최대 100개 까지의 입력을 체크
@@ -179,8 +178,8 @@ _IHTMouseHandler:
     mov dl, 0x60
     call _in_port_byte
 
-    test dh, 0x20
-    jz .end
+    cmp dh, 0x20
+    jne .end
     ; 마우스 데이터 인지 체크
 
     ;----------------------------------------------------
